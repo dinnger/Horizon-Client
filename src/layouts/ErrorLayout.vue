@@ -35,7 +35,7 @@
     <!-- Main Content -->
     <main class="flex-1 flex items-center justify-center p-6">
       <div class="text-center max-w-2xl mx-auto">
-        <slot />
+        <router-view />
 
         <!-- Botones de navegación por defecto -->
         <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">

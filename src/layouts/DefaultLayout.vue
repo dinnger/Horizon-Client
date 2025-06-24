@@ -17,6 +17,8 @@
         </button>
       </div>
 
+      <WorkspaceSelector :is-expanded="isExpanded" />
+
       <!-- Menu Items -->
       <nav class="flex-1 p-2">
         <ul class="space-y-2">
@@ -104,7 +106,7 @@
 
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
-      <slot />
+      <router-view />
     </div>
   </div>
 </template>
@@ -119,6 +121,7 @@ import IconSettings from '../components/icons/IconSettings.vue'
 import IconSun from '../components/icons/IconSun.vue'
 import IconMoon from '../components/icons/IconMoon.vue'
 import IconPalette from '../components/icons/IconPalette.vue'
+import WorkspaceSelector from '@/components/WorkspaceSelector.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -161,7 +164,7 @@ const setTheme = (theme: string) => {
 
 const handleLogout = () => {
   authStore.logout()
-  router.push('/login')
+  router.push('/auth/login')
 }
 
 const editProfile = () => {

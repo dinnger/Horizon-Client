@@ -1,9 +1,8 @@
 /* Base styles for the application */
 @import "tailwindcss";
 @plugin "daisyui" {
-	themes: light --default, dark --prefersdark, corporate;
+	themes: all;
 }
-@custom-variant dark (&:where(.dark, .dark *));
 
 body {
 	min-height: 100vh;

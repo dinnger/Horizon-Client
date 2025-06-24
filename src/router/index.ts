@@ -1,9 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
+import AuthLayout from "../layouts/AuthLayout.vue";
+import DefaultLayout from "../layouts/DefaultLayout.vue";
+import ErrorLayout from "../layouts/ErrorLayout.vue";
 import HomeView from "../views/HomeView.vue";
 import ProjectsView from "../views/ProjectsView.vue";
 import ProjectDetailView from "../views/ProjectDetailView.vue";
 import CanvasView from "../views/CanvasView.vue";
 import LoginView from "../views/LoginView.vue";
+import SettingsView from "../views/SettingsView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 import ServerErrorView from "../views/ServerErrorView.vue";
 import { authGuard } from "../guards/auth";
@@ -11,48 +15,81 @@ import { authGuard } from "../guards/auth";
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
 	routes: [
+		// Rutas de autenticación con AuthLayout
+		{
+			path: "/auth",
+			component: AuthLayout,
+			children: [
+				{
+					path: "login",
+					name: "login",
+					component: LoginView,
+				},
+			],
+		},
+		// Alias para mantener compatibilidad con /login
 		{
 			path: "/login",
-			name: "login",
-			component: LoginView,
+			redirect: "/auth/login",
 		},
+		// Rutas principales con DefaultLayout
 		{
 			path: "/",
-			name: "home",
-			component: HomeView,
+			component: DefaultLayout,
+			children: [
+				{
+					path: "",
+					name: "home",
+					component: HomeView,
+				},
+				{
+					path: "projects",
+					name: "projects",
+					component: ProjectsView,
+				},
+				{
+					path: "projects/:id",
+					name: "project-detail",
+					component: ProjectDetailView,
+				},
+				{
+					path: "projects/:id/canvas",
+					name: "canvas",
+					component: CanvasView,
+				},
+				{
+					path: "settings",
+					name: "settings",
+					component: SettingsView,
+				},
+			],
 		},
+		// Rutas de error con ErrorLayout
 		{
-			path: "/projects",
-			name: "projects",
-			component: ProjectsView,
+			path: "/error",
+			component: ErrorLayout,
+			children: [
+				{
+					path: "500",
+					name: "server-error",
+					component: ServerErrorView,
+				},
+				{
+					path: "404",
+					name: "not-found",
+					component: NotFoundView,
+				},
+			],
 		},
-		{
-			path: "/projects/:id",
-			name: "project-detail",
-			component: ProjectDetailView,
-		},
-		{
-			path: "/projects/:id/canvas",
-			name: "canvas",
-			component: CanvasView,
-		},
-		{
-			path: "/settings",
-			name: "settings",
-			// route level code-splitting
-			// this generates a separate chunk (About.[hash].js) for this route
-			// which is lazy-loaded when the route is visited.
-			component: () => import("../views/AboutView.vue"),
-		},
+		// Alias para mantener compatibilidad con /500
 		{
 			path: "/500",
-			name: "server-error",
-			component: ServerErrorView,
+			redirect: "/error/500",
 		},
+		// Catch-all para 404
 		{
 			path: "/:pathMatch(.*)*",
-			name: "not-found",
-			component: NotFoundView,
+			redirect: "/error/404",
 		},
 	],
 });
