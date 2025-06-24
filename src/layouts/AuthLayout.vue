@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen w-full bg-gradient-to-br from-primary/20 via-base-100 to-secondary/20">
+  <div class="min-h-screen w-full bg-gradient-to-br from-primary/20 via-base-100 to-secondary/20"
+    :data-theme="settingsStore.currentTheme">
     <!-- Header opcional con logo -->
     <header class="absolute top-0 left-0 right-0 z-10">
       <div class="container mx-auto p-6">
@@ -21,7 +22,7 @@
             </div>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
               <li v-for="theme in themes" :key="theme.value">
-                <a @click="setTheme(theme.value)" :class="{ 'active': currentTheme === theme.value }">
+                <a @click="setTheme(theme.value)" :class="{ 'active': settingsStore.currentTheme === theme.value }">
                   <component :is="theme.icon" class="w-4 h-4" />
                   {{ theme.label }}
                 </a>
@@ -51,8 +52,9 @@ import { ref, computed, onMounted } from 'vue'
 import IconSun from '../components/icons/IconSun.vue'
 import IconMoon from '../components/icons/IconMoon.vue'
 import IconPalette from '../components/icons/IconPalette.vue'
+import { useSettingsStore } from '@/stores'
 
-const currentTheme = ref('crystal')
+const settingsStore = useSettingsStore()
 
 const themes = [
   { value: 'crystal', label: 'Crystal Light', icon: IconSun },
@@ -66,15 +68,13 @@ const themes = [
 ]
 
 const themeIcon = computed(() => {
-  if (currentTheme.value.includes('dark')) return IconMoon
-  if (currentTheme.value === 'light' || currentTheme.value === 'crystal') return IconSun
+  if (settingsStore.currentTheme.includes('dark')) return IconMoon
+  if (settingsStore.currentTheme === 'light' || settingsStore.currentTheme === 'crystal') return IconSun
   return IconPalette
 })
 
 const setTheme = (theme: string) => {
-  currentTheme.value = theme
-  document.documentElement.setAttribute('data-theme', theme)
-  localStorage.setItem('theme', theme)
+  settingsStore.setTheme(theme)
 }
 
 onMounted(() => {

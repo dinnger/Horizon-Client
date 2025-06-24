@@ -38,6 +38,7 @@ export interface UserSettings {
 
 export const useSettingsStore = defineStore("settings", () => {
 	// Current settings
+
 	const currentTheme = ref("crystal");
 	const fontSize = ref(16);
 	const canvasRefreshRate = ref(33);
@@ -101,10 +102,8 @@ export const useSettingsStore = defineStore("settings", () => {
 		},
 	]);
 
-	// Actions
 	const setTheme = (theme: string) => {
 		currentTheme.value = theme;
-		document.documentElement.setAttribute("data-theme", theme);
 		saveSettings();
 	};
 

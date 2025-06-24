@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-error/10 via-base-100 to-warning/10 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-br from-error/10 via-base-100 to-warning/10 flex flex-col"
+    :data-theme="settingsStore.currentTheme">
     <!-- Header -->
     <header class="p-6">
       <div class="container mx-auto">
@@ -21,7 +22,7 @@
             </div>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
               <li v-for="theme in themes" :key="theme.value">
-                <a @click="setTheme(theme.value)" :class="{ 'active': currentTheme === theme.value }">
+                <a @click="setTheme(theme.value)" :class="{ 'active': settingsStore.currentTheme === theme.value }">
                   <component :is="theme.icon" class="w-4 h-4" />
                   {{ theme.label }}
                 </a>
@@ -71,9 +72,11 @@ import { useRouter } from 'vue-router'
 import IconSun from '../components/icons/IconSun.vue'
 import IconMoon from '../components/icons/IconMoon.vue'
 import IconPalette from '../components/icons/IconPalette.vue'
+import { useSettingsStore } from '@/stores'
+
+const settingsStore = useSettingsStore()
 
 const router = useRouter()
-const currentTheme = ref('crystal')
 
 const themes = [
   { value: 'crystal', label: 'Crystal Light', icon: IconSun },
@@ -87,15 +90,13 @@ const themes = [
 ]
 
 const themeIcon = computed(() => {
-  if (currentTheme.value.includes('dark')) return IconMoon
-  if (currentTheme.value === 'light' || currentTheme.value === 'crystal') return IconSun
+  if (settingsStore.currentTheme.includes('dark')) return IconMoon
+  if (settingsStore.currentTheme === 'light' || settingsStore.currentTheme === 'crystal') return IconSun
   return IconPalette
 })
 
 const setTheme = (theme: string) => {
-  currentTheme.value = theme
-  document.documentElement.setAttribute('data-theme', theme)
-  localStorage.setItem('theme', theme)
+  settingsStore.setTheme(theme)
 }
 
 const goBack = () => {

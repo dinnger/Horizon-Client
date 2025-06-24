@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen w-full bg-base-100">
+  <div class="flex h-screen w-full bg-base-100" :data-theme="settingsStore.currentTheme">
     <!-- Sidebar -->
     <div :class="[
       'transition-all duration-300 flex flex-col bg-base-200 shadow-xl backdrop-blur-lg border-r border-base-300',
@@ -93,7 +93,7 @@
             </div>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
               <li v-for="theme in themes" :key="theme.value">
-                <a @click="setTheme(theme.value)" :class="{ 'active': currentTheme === theme.value }">
+                <a @click="setTheme(theme.value)" :class="{ 'active': settingsStore.currentTheme === theme.value }">
                   <component :is="theme.icon" class="w-4 h-4" />
                   {{ theme.label }}
                 </a>
@@ -122,12 +122,16 @@ import IconSun from '../components/icons/IconSun.vue'
 import IconMoon from '../components/icons/IconMoon.vue'
 import IconPalette from '../components/icons/IconPalette.vue'
 import WorkspaceSelector from '@/components/WorkspaceSelector.vue'
+import { useSettingsStore } from '@/stores'
+
+
+const settingsStore = useSettingsStore()
+settingsStore.loadSettings()
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const isExpanded = ref(true)
-const currentTheme = ref('crystal')
 
 const menuItems = [
   { path: '/', label: 'Home', icon: IconHome },
@@ -147,8 +151,9 @@ const themes = [
 ]
 
 const themeIcon = computed(() => {
-  if (currentTheme.value.includes('dark')) return IconMoon
-  if (currentTheme.value === 'light' || currentTheme.value === 'crystal') return IconSun
+  const currentTheme = settingsStore.currentTheme
+  if (currentTheme.includes('dark')) return IconMoon
+  if (currentTheme === 'light' || currentTheme === 'crystal') return IconSun
   return IconPalette
 })
 
@@ -157,9 +162,7 @@ const toggleSidebar = () => {
 }
 
 const setTheme = (theme: string) => {
-  currentTheme.value = theme
-  document.documentElement.setAttribute('data-theme', theme)
-  localStorage.setItem('theme', theme)
+  settingsStore.setTheme(theme)
 }
 
 const handleLogout = () => {
@@ -172,8 +175,5 @@ const editProfile = () => {
   console.log('Editar perfil - por implementar')
 }
 
-onMounted(() => {
-  const savedTheme = localStorage.getItem('theme') || 'crystal'
-  setTheme(savedTheme)
-})
+
 </script>

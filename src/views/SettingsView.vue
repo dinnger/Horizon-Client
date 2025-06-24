@@ -559,6 +559,6 @@ const deleteWorkspace = (id: string) => {
 
 onMounted(() => {
   workspaceStore.initWorkspaces()
-  settingsStore.loadSettings()
+
 })
 </script>
