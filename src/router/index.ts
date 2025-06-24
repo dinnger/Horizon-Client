@@ -5,6 +5,7 @@ import ErrorLayout from "../layouts/ErrorLayout.vue";
 import HomeView from "../views/HomeView.vue";
 import ProjectsView from "../views/ProjectsView.vue";
 import ProjectDetailView from "../views/ProjectDetailView.vue";
+import WorkflowDetailView from "../views/WorkflowDetailView.vue";
 import CanvasView from "../views/CanvasView.vue";
 import LoginView from "../views/LoginView.vue";
 import SettingsView from "../views/SettingsView.vue";
@@ -51,6 +52,11 @@ const router = createRouter({
 					path: "projects/:id",
 					name: "project-detail",
 					component: ProjectDetailView,
+				},
+				{
+					path: "projects/:projectId/workflows/:workflowId",
+					name: "workflow-detail",
+					component: WorkflowDetailView,
 				},
 				{
 					path: "projects/:id/canvas",

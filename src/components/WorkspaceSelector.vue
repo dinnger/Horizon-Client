@@ -1,6 +1,6 @@
 <template>
   <div class="p-4 border-b border-base-300">
-    <div class="dropdown dropdown-top w-full">
+    <div class="dropdown dropdown-rigth w-full">
       <div tabindex="0" role="button" class="btn btn-ghost w-full justify-start text-left p-2">
         <div class="flex items-center space-x-3 w-full">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white flex-shrink-0"
@@ -25,7 +25,7 @@
       </div>
 
       <ul tabindex="0"
-        class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-72 max-h-80 overflow-y-auto">
+        class="dropdown-content  z-[1] menu p-2 shadow bg-base-100 rounded-box w-72 max-h-80 overflow-y-auto">
         <li class="menu-title">
           <span>Workspaces disponibles</span>
         </li>

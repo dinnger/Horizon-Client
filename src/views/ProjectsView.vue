@@ -7,17 +7,15 @@
           <h1 class="text-3xl font-bold text-primary">Proyectos</h1>
           <p class="text-base-content/70 mt-2">Gestiona todos tus proyectos desde aquí</p>
         </div>
-        <button @click="showCreateModal = true" class="btn btn-primary glass">
+        <button @click="showCreateModal = true" class="btn btn-primary">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           Nuevo Proyecto
         </button>
-      </div>
-
-      <!-- Projects Grid -->
+      </div> <!-- Projects Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div v-for="project in projects" :key="project.id" @click="goToProject(project.id)"
+        <div v-for="project in projectsWithWorkflows" :key="project.id" @click="goToProject(project.id)"
           class="card bg-base-200 shadow-xl backdrop-blur-sm border border-base-300 hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-105">
           <div class="card-body">
             <div class="flex justify-between items-start mb-4">
@@ -51,7 +49,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="projects.length === 0"
+        <div v-if="projectsWithWorkflows.length === 0"
           class="col-span-full flex flex-col items-center justify-center py-16 text-center">
           <div class="w-24 h-24 bg-base-300 rounded-full flex items-center justify-center mb-4">
             <svg class="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,50 +102,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  status: 'active' | 'inactive'
-  workflows: string[]
-  createdAt: Date
-}
+import { useProjectWorkflows } from '@/composables/useProjectWorkflows'
+import type { Project } from '@/stores'
 
 const router = useRouter()
+const { projectsStore, workflowsStore, getProjectsWithWorkflows, initializeStores, deleteProjectAndWorkflows } = useProjectWorkflows()
 const showCreateModal = ref(false)
-const projects = ref<Project[]>([
-  {
-    id: '1',
-    name: 'Web Application',
-    description: 'Una aplicación web moderna con Vue.js y TypeScript',
-    status: 'active',
-    workflows: ['build', 'test', 'deploy'],
-    createdAt: new Date('2024-01-15')
-  },
-  {
-    id: '2',
-    name: 'Mobile App',
-    description: 'Aplicación móvil para iOS y Android',
-    status: 'inactive',
-    workflows: ['build', 'test'],
-    createdAt: new Date('2024-02-10')
-  },
-  {
-    id: '3',
-    name: 'API Backend',
-    description: 'API REST con Node.js y Express',
-    status: 'active',
-    workflows: ['build', 'test', 'deploy', 'monitoring'],
-    createdAt: new Date('2024-03-05')
-  }
-])
 
 const newProject = reactive({
   name: '',
   description: ''
+})
+
+// Obtener proyectos con información de workflows
+const projectsWithWorkflows = getProjectsWithWorkflows
+
+onMounted(() => {
+  initializeStores()
 })
 
 const goToProject = (projectId: string) => {
@@ -155,16 +128,11 @@ const goToProject = (projectId: string) => {
 }
 
 const createProject = () => {
-  const project: Project = {
-    id: Date.now().toString(),
+  projectsStore.createProject({
     name: newProject.name,
     description: newProject.description,
-    status: 'active',
-    workflows: [],
-    createdAt: new Date()
-  }
-
-  projects.value.push(project)
+    status: 'active'
+  })
 
   // Reset form
   newProject.name = ''
@@ -173,22 +141,21 @@ const createProject = () => {
 }
 
 const editProject = (project: Project) => {
-  // TODO: Implement edit functionality
   console.log('Edit project:', project)
+  // TODO: Implement edit functionality
 }
 
-const deleteProject = (projectId: string) => {
-  const index = projects.value.findIndex(p => p.id === projectId)
-  if (index > -1) {
-    projects.value.splice(index, 1)
+const deleteProject = async (projectId: string) => {
+  if (confirm('¿Estás seguro de que quieres eliminar este proyecto y todos sus workflows?')) {
+    await deleteProjectAndWorkflows(projectId)
   }
 }
 
 const formatDate = (date: Date) => {
-  return date.toLocaleDateString('es-ES', {
+  return new Intl.DateTimeFormat('es-ES', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
-  })
+  }).format(date)
 }
 </script>
