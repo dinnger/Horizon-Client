@@ -4,17 +4,7 @@
     <!-- Header opcional con logo -->
     <header class="absolute top-0 left-0 right-0 z-10">
       <div class="container mx-auto p-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
-              </svg>
-            </div>
-            <span class="text-xl font-bold text-base-content">Horizon</span>
-          </div>
-
+        <div class="flex items-center justify-end">
           <!-- Theme Switcher -->
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
@@ -77,8 +67,5 @@ const setTheme = (theme: string) => {
   settingsStore.setTheme(theme)
 }
 
-onMounted(() => {
-  const savedTheme = localStorage.getItem('theme') || 'crystal'
-  setTheme(savedTheme)
-})
+
 </script>

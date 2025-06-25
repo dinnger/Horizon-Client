@@ -1,12 +1,40 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import socketService from '../services/socket'
 
 export interface User {
   id: string
   email: string
   name: string
   avatar?: string
-  role: 'admin' | 'user'
+  role: {
+    id: string
+    name: string
+    level: number
+    description?: string
+  }
+  permissions: {
+    id: string
+    module: string
+    action: string
+    description?: string
+  }[]
+  settings?: {
+    theme: 'light' | 'dark' | 'system'
+    language: string
+    timezone: string
+    notifications: {
+      email: boolean
+      push: boolean
+      workflowComplete: boolean
+      workflowError: boolean
+    }
+    preferences: {
+      autoSave: boolean
+      showLineNumbers: boolean
+      wordWrap: boolean
+    }
+  }
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -15,35 +43,25 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value)
 
-  // Simulación de login
+  // Login con Socket.IO
   const login = async (email: string, password: string): Promise<boolean> => {
     isLoading.value = true
     
     try {
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1500))
-        // Validación simple para demo
-      if (email === 'admin@horizon.com' && password === 'admin123') {
-        user.value = {
-          id: '1',
-          email: 'admin@horizon.com',
-          name: 'Administrator',
-          avatar: 'https://ui-avatars.com/api/?name=Administrator&background=3b82f6&color=fff',
-          role: 'admin'
-        }
-        localStorage.setItem('horizon-user', JSON.stringify(user.value))
-        return true
-      }
+      // Conectar socket sin autenticación para login
+      socketService.connect()
       
-      if (email === 'user@horizon.com' && password === 'user123') {
-        user.value = {
-          id: '2',
-          email: 'user@horizon.com',
-          name: 'John Doe',
-          avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=8b5cf6&color=fff',
-          role: 'user'
-        }
+      // Intentar login
+      const response = await socketService.login(email, password)
+      
+      if (response.success && response.user) {
+        user.value = response.user
         localStorage.setItem('horizon-user', JSON.stringify(user.value))
+        
+        // Reconectar con autenticación
+        socketService.disconnect()
+        socketService.connect(user.value.id)
+        
         return true
       }
       
@@ -59,13 +77,28 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = () => {
     user.value = null
     localStorage.removeItem('horizon-user')
+    socketService.disconnect()
   }
 
-  const initAuth = () => {
+  const initAuth = async () => {
     const savedUser = localStorage.getItem('horizon-user')
     if (savedUser) {
       try {
-        user.value = JSON.parse(savedUser)
+        const parsedUser = JSON.parse(savedUser)
+        user.value = parsedUser
+        
+        // Reconectar socket con autenticación
+        socketService.connect(parsedUser.id)
+        
+        // Verificar que el usuario sigue siendo válido
+        try {
+          const currentUser = await socketService.getCurrentUser()
+          user.value = currentUser
+          localStorage.setItem('horizon-user', JSON.stringify(currentUser))
+        } catch (error) {
+          console.warn('Usuario guardado no es válido, limpiando:', error)
+          logout()
+        }
       } catch (error) {
         console.error('Error parsing saved user:', error)
         localStorage.removeItem('horizon-user')
@@ -80,13 +113,38 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Helper para verificar permisos
+  const hasPermission = (module: string, action: string): boolean => {
+    if (!user.value?.permissions) return false
+    return user.value.permissions.some(
+      permission => permission.module === module && permission.action === action
+    )
+  }
+
+  // Helper para verificar roles
+  const hasRole = (roleName: string): boolean => {
+    return user.value?.role?.name === roleName
+  }
+
+  const isAdmin = computed(() => {
+    return hasRole('SuperAdmin') || hasRole('Admin')
+  })
+
+  const isSuperAdmin = computed(() => {
+    return hasRole('SuperAdmin')
+  })
+
   return {
     user,
     isLoading,
     isAuthenticated,
+    isAdmin,
+    isSuperAdmin,
     login,
     logout,
     initAuth,
-    updateProfile
+    updateProfile,
+    hasPermission,
+    hasRole
   }
 })
