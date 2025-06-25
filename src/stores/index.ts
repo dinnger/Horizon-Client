@@ -2,6 +2,7 @@
 export { useProjectsStore } from "./projects";
 export { useWorkflowsStore } from "./workflows";
 export { useNodesLibraryStore } from "./nodesLibrary";
+export { useCanvas } from "./canvas";
 
 // Exportar tipos
 export type { Project } from "./projects";

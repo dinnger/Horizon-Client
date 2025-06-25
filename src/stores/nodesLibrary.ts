@@ -16,7 +16,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 	const availableNodes = ref<INodeCanvas[]>([
 		// Nodos de Input
 		{
-			id: "input-webhook",
 			type: "input",
 			design: { x: 0, y: 0 },
 			tags: ["input", "trigger"],
@@ -34,7 +33,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "input-schedule",
 			type: "input",
 			design: { x: 0, y: 0 },
 			tags: ["input", "trigger"],
@@ -52,7 +50,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "input-manual",
 			type: "input",
 			design: { x: 0, y: 0 },
 			tags: ["input", "trigger"],
@@ -70,7 +67,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "input-file-watcher",
 			type: "input",
 			design: { x: 0, y: 0 },
 			tags: ["input", "file"],
@@ -88,7 +84,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "input-email",
 			type: "input",
 			design: { x: 0, y: 0 },
 			tags: ["input", "email"],
@@ -108,7 +103,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Google Drive
 		{
-			id: "google-drive-upload",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "drive", "upload"],
@@ -126,7 +120,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-drive-download",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "drive", "download"],
@@ -144,7 +137,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-drive-list",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "drive", "list"],
@@ -162,7 +154,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-drive-share",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "drive", "share"],
@@ -180,7 +171,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-drive-delete",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "drive", "delete"],
@@ -200,7 +190,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Google Sheets
 		{
-			id: "google-sheets-read",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "sheets", "read"],
@@ -218,7 +207,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-sheets-write",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "sheets", "write"],
@@ -236,7 +224,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-sheets-create",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "sheets", "create"],
@@ -254,7 +241,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-sheets-append",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "sheets", "append"],
@@ -272,7 +258,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "google-sheets-clear",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["google", "sheets", "clear"],
@@ -292,7 +277,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Microsoft Office
 		{
-			id: "excel-read",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["microsoft", "excel", "read"],
@@ -310,7 +294,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "excel-write",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["microsoft", "excel", "write"],
@@ -328,7 +311,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "word-create",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["microsoft", "word", "create"],
@@ -346,7 +328,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "powerpoint-create",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["microsoft", "powerpoint", "create"],
@@ -366,7 +347,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Base de Datos
 		{
-			id: "mysql-query",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["database", "mysql", "query"],
@@ -384,7 +364,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "postgres-query",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["database", "postgres", "query"],
@@ -402,7 +381,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "mongodb-find",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["database", "mongodb", "find"],
@@ -420,7 +398,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "mongodb-insert",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["database", "mongodb", "insert"],
@@ -440,7 +417,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Comunicación
 		{
-			id: "email-send",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["communication", "email", "send"],
@@ -458,7 +434,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "slack-message",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["communication", "slack", "message"],
@@ -476,7 +451,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "teams-message",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["communication", "teams", "message"],
@@ -494,7 +468,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "discord-message",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["communication", "discord", "message"],
@@ -514,7 +487,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Utilidades
 		{
-			id: "json-parse",
 			type: "utility",
 			design: { x: 0, y: 0 },
 			tags: ["utility", "json", "parse"],
@@ -532,7 +504,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "json-stringify",
 			type: "utility",
 			design: { x: 0, y: 0 },
 			tags: ["utility", "json", "stringify"],
@@ -550,7 +521,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "text-replace",
 			type: "utility",
 			design: { x: 0, y: 0 },
 			tags: ["utility", "text", "replace"],
@@ -568,7 +538,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "text-split",
 			type: "utility",
 			design: { x: 0, y: 0 },
 			tags: ["utility", "text", "split"],
@@ -586,7 +555,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "date-format",
 			type: "utility",
 			design: { x: 0, y: 0 },
 			tags: ["utility", "date", "format"],
@@ -604,7 +572,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "math-calculate",
 			type: "utility",
 			design: { x: 0, y: 0 },
 			tags: ["utility", "math", "calculate"],
@@ -624,7 +591,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de APIs
 		{
-			id: "http-request",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["api", "http", "request"],
@@ -642,7 +608,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "graphql-query",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["api", "graphql", "query"],
@@ -660,7 +625,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "rest-get",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["api", "rest", "get"],
@@ -678,7 +642,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "rest-post",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["api", "rest", "post"],
@@ -698,7 +661,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Archivos
 		{
-			id: "file-read",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["file", "read"],
@@ -716,7 +678,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "file-write",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["file", "write"],
@@ -734,7 +695,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "file-compress",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["file", "compress"],
@@ -752,7 +712,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "file-extract",
 			type: "action",
 			design: { x: 0, y: 0 },
 			tags: ["file", "extract"],
@@ -772,7 +731,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 
 		// Nodos de Output
 		{
-			id: "output-log",
 			type: "output",
 			design: { x: 0, y: 0 },
 			tags: ["output", "log"],
@@ -790,7 +748,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "output-webhook",
 			type: "output",
 			design: { x: 0, y: 0 },
 			tags: ["output", "webhook"],
@@ -808,7 +765,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "output-file",
 			type: "output",
 			design: { x: 0, y: 0 },
 			tags: ["output", "file"],
@@ -826,7 +782,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "output-database",
 			type: "output",
 			design: { x: 0, y: 0 },
 			tags: ["output", "database"],
@@ -844,7 +799,6 @@ export const useNodesLibraryStore = defineStore("nodesLibrary", () => {
 			properties: {},
 		},
 		{
-			id: "output-response",
 			type: "output",
 			design: { x: 0, y: 0 },
 			tags: ["output", "response"],
