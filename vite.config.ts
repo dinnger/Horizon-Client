@@ -11,6 +11,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": fileURLToPath(new URL("./src", import.meta.url)),
+			"@canvas": fileURLToPath(new URL("./canvas", import.meta.url)),
 		},
 	},
 });

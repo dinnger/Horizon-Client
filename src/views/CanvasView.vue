@@ -10,11 +10,18 @@
         </button>
         <div>
           <h1 class="text-xl font-bold">Canvas - {{ projectName }}</h1>
-          <p class="text-sm opacity-70">Diseña tu workflow visualmente</p>
+          <p class="text-sm opacity-70">Diseña tu workflow visualmente • Presiona <kbd class="kbd kbd-xs">Espacio</kbd>
+            para añadir nodos</p>
         </div>
       </div>
 
       <div class="flex items-center space-x-2">
+        <button @click="showNodesPanel" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Añadir Nodo
+        </button>
         <button class="btn btn-primary btn-sm">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -33,56 +40,104 @@
         zoom: {{ canvasZoom }} X
       </div>
     </div>
+
+    <!-- Panel de librería de nodos -->
+    <NodesLibraryPanel @node-selected="handleNodeSelection" @close="onPanelClose" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { Canvas } from '../../canvas/canvas.ts'
-import { useSettingsStore } from '@/stores'
+import { Canvas } from '@canvas/canvas.ts'
+import { useSettingsStore, useNodesLibraryStore } from '@/stores'
+import NodesLibraryPanel from '@/components/NodesLibraryPanel.vue'
+import type { INodeCanvas, INodeCanvasAdd } from '@canvas/interfaz/node.interface'
 
 const settingsStore = useSettingsStore()
-
-interface Node {
-  id: string
-  type: string
-  name: string
-  x: number
-  y: number
-}
-
-interface NodeType {
-  type: string
-  name: string
-  description: string
-  color: string
-}
+const nodesStore = useNodesLibraryStore()
 
 const contentCanvas = ref<HTMLCanvasElement>()
-const route = useRoute()
 const canvasContainer = ref<HTMLElement>()
 const canvasPos = ref('0x, 0y')
 const canvasZoom = ref(1)
 
+const nodeOrigin = ref<INodeCanvasAdd | null>(null)
+
+let canvasInstance: Canvas | null = null
+
 const projectName = ref('Web Application')
+
+// Posición donde se añadirá el próximo nodo
+const nextNodePosition = ref({ x: 100, y: 100 })
+const currentMousePosition = ref({ x: 0, y: 0 })
+
+
+
+// Función para manejar la selección de un nodo desde el panel
+const handleNodeSelection = (selectedNode: INodeCanvas) => {
+  if (!canvasInstance || !nodeOrigin.value) return
+
+  // Usar la posición del mouse si está disponible, sino usar la posición por defecto
+  const positionX = currentMousePosition.value.x || nextNodePosition.value.x
+  const positionY = currentMousePosition.value.y || nextNodePosition.value.y
+
+  // Crear una copia del nodo con nueva posición
+  const nodeToAdd: INodeCanvas = {
+    ...JSON.parse(JSON.stringify(selectedNode)),
+    design: {
+      x: positionX,
+      y: positionY
+    }
+  }
+
+
+
+  const nodeId = canvasInstance.actionAddNode({
+    origin: {
+      idNode: nodeOrigin.value.node.id as string,
+      connectorType: nodeOrigin.value.connection.type,
+      connectorName: nodeOrigin.value.connection.name
+    },
+    node: nodeToAdd,
+    isManual: true
+  })
+
+
+  console.log(`Nodo ${selectedNode.info.name} añadido con ID: ${nodeId}`)
+}
+
+// Función para manejar el cierre del panel
+const onPanelClose = () => {
+  // Aquí puedes agregar lógica adicional cuando se cierre el panel
+  console.log('Panel de nodos cerrado')
+}
 
 onMounted(() => {
   if (!contentCanvas.value) return
-  const canvas = new Canvas({
+
+  canvasInstance = new Canvas({
     canvas: contentCanvas.value,
     theme: settingsStore.currentTheme
   })
-  canvas.subscriber("mouse_move", (e) => {
+  // Suscribirse a eventos del canvas
+  canvasInstance.subscriber("mouse_move", (e) => {
     canvasPos.value = `${e.x}x, ${e.y}y`
+    // Actualizar posición del mouse para usar al añadir nodos
+    currentMousePosition.value = { x: e.x, y: e.y }
   })
-  canvas.subscriber("zoom", (e) => {
+
+  canvasInstance.subscriber("zoom", (e) => {
     canvasZoom.value = e.zoom
   })
-  canvas.subscriber("node_added", (e) => {
-    console.log(e)
+
+  canvasInstance.subscriber("node_added", (e: INodeCanvasAdd) => {
+    console.log('Nodo añadido:', e)
+    nodeOrigin.value = e
+    nodesStore.showNodePanel(e)
   })
-  canvas.actionAddNode({
+
+  // Añadir un nodo inicial de ejemplo
+  canvasInstance.actionAddNode({
     node: {
       id: '1',
       type: 'input',
@@ -102,6 +157,8 @@ onMounted(() => {
       properties: {}
     }
   })
+
+
 })
 </script>
 

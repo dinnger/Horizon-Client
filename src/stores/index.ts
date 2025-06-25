@@ -1,10 +1,12 @@
 // Exportar stores
 export { useProjectsStore } from "./projects";
 export { useWorkflowsStore } from "./workflows";
+export { useNodesLibraryStore } from "./nodesLibrary";
 
 // Exportar tipos
 export type { Project } from "./projects";
 export type { Workflow } from "./workflows";
+export type { NodeGroup } from "./nodesLibrary";
 
 // Exportar otros stores existentes
 export { useAuthStore } from "./auth";
