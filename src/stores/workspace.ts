@@ -1,25 +1,12 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
-
-export interface Workspace {
-	id: string;
-	name: string;
-	description?: string;
-	color: string;
-	icon: string;
-	createdAt: Date;
-	updatedAt: Date;
-	isDefault: boolean;
-}
+import socketService from "../services/socket";
+import type { Workspace } from "@/types/socket";
 
 export const useWorkspaceStore = defineStore("workspace", () => {
 	const workspaces = ref<Workspace[]>([]);
 	const currentWorkspaceId = ref<string>("");
 	const currentWorkspace = computed(() => {
-		// Inicializar si no hay workspaces
-		if (workspaces.value.length === 0) {
-			initWorkspaces();
-		}
 		return (
 			workspaces.value.find((w) => w.id === currentWorkspaceId.value) ||
 			workspaces.value[0]
@@ -31,14 +18,16 @@ export const useWorkspaceStore = defineStore("workspace", () => {
 	});
 
 	// Inicializar workspaces con uno por defecto
-	const initWorkspaces = () => {
-		const savedWorkspaces = localStorage.getItem("horizon-workspaces");
+	const initWorkspaces = async () => {
+		const savedWorkspaces: Workspace[] | null =
+			await socketService.getWorkspaces();
+		console.log("🌱 Iniciando workspaces...", savedWorkspaces);
+
 		const savedCurrentId = localStorage.getItem("horizon-current-workspace");
 
 		if (savedWorkspaces) {
 			try {
-				const parsed = JSON.parse(savedWorkspaces) as Workspace[];
-				workspaces.value = parsed.map((w) => ({
+				workspaces.value = savedWorkspaces.map((w) => ({
 					...w,
 					createdAt: new Date(w.createdAt),
 					updatedAt: new Date(w.updatedAt),
@@ -72,6 +61,7 @@ export const useWorkspaceStore = defineStore("workspace", () => {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			isDefault: true,
+			status: "active",
 		};
 
 		workspaces.value = [defaultWs];

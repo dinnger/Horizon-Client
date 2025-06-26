@@ -92,6 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
         
         // Verificar que el usuario sigue siendo válido
         try {
+          console.log("🌱 Iniciando socket.io...",await socketService.getSocket())
           const currentUser = await socketService.getCurrentUser()
           user.value = currentUser
           localStorage.setItem('horizon-user', JSON.stringify(currentUser))

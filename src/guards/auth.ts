@@ -1,7 +1,6 @@
 import type { NavigationGuardNext, RouteLocationNormalized } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 
-let isInitialized = false;
 
 export const authGuard = (
 	to: RouteLocationNormalized,
@@ -10,11 +9,7 @@ export const authGuard = (
 ) => {
 	const authStore = useAuthStore();
 
-	// Inicializar el store solo una vez
-	if (!isInitialized) {
-		authStore.initAuth();
-		isInitialized = true;
-	}
+
 	// Rutas públicas que no requieren autenticación
 	const publicRoutes = ["/login", "/auth/login", "/error/404", "/error/500"];
 

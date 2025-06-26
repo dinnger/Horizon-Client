@@ -88,7 +88,7 @@ const switchWorkspace = (workspaceId: string) => {
   }
 }
 
-onMounted(() => {
-  workspaceStore.initWorkspaces()
+onMounted(async () => {
+  await workspaceStore.initWorkspaces()
 })
 </script>

@@ -1,342 +1,385 @@
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 import type {
-  LoginResponse,
-  PermissionCheckResponse,
-  SocketResponse,
-  User,
-  Workspace,
-  Project,
-  Workflow,
-  UserSettings,
-  WorkflowExecution,
-  LoginData,
-  PermissionCheckData,
-  WorkspaceCreateData,
-  WorkspaceUpdateData,
-  ProjectCreateData,
-  WorkflowCreateData,
-  WorkflowExecuteData,
-  SettingsUpdateData
-} from '../types/socket';
+	LoginResponse,
+	PermissionCheckResponse,
+	SocketResponse,
+	User,
+	Workspace,
+	Project,
+	Workflow,
+	UserSettings,
+	WorkflowExecution,
+	LoginData,
+	PermissionCheckData,
+	WorkspaceCreateData,
+	WorkspaceUpdateData,
+	ProjectCreateData,
+	WorkflowCreateData,
+	WorkflowExecuteData,
+	SettingsUpdateData,
+} from "../types/socket";
 
 class SocketService {
-  private socket: Socket | null = null;
-  private isConnected = false;
+	private socket: Socket | null = null;
+	private isConnected = false;
 
-  connect(userId?: string): Socket {
-    if (this.socket?.connected) {
-      return this.socket;
-    }
+	connect(userId?: string): Socket {
+		if (this.socket?.connected) {
+			return this.socket;
+		}
 
-    const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
-    
-    this.socket = io(serverUrl, {
-      auth: userId ? { userId } : {},
-      autoConnect: true,
-    });
+		const serverUrl =
+			import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
 
-    this.socket.on('connect', () => {
-      console.log('Connected to server:', this.socket?.id);
-      this.isConnected = true;
-    });
+		this.socket = io(serverUrl, {
+			auth: userId ? { userId } : {},
+			autoConnect: true,
+		});
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-      this.isConnected = false;
-    });
+		this.socket.on("connect", () => {
+			console.log("Connected to server:", this.socket?.id);
+			this.isConnected = true;
+		});
 
-    this.socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-      this.isConnected = false;
-    });
+		this.socket.on("disconnect", () => {
+			console.log("Disconnected from server");
+			this.isConnected = false;
+		});
 
-    return this.socket;
-  }
+		this.socket.on("connect_error", (error) => {
+			console.error("Connection error:", error);
+			this.isConnected = false;
+		});
 
-  disconnect(): void {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-      this.isConnected = false;
-    }
-  }
+		return this.socket;
+	}
 
-  getSocket(): Socket | null {
-    return this.socket;
-  }
+	disconnect(): void {
+		if (this.socket) {
+			this.socket.disconnect();
+			this.socket = null;
+			this.isConnected = false;
+		}
+	}
 
-  isSocketConnected(): boolean {
-    return this.isConnected && this.socket?.connected === true;
-  }
+	getSocket(): Socket | null {
+		return this.socket;
+	}
 
-  // Auth methods
-  login(email: string, password: string): Promise<LoginResponse> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+	isSocketConnected(): boolean {
+		return this.isConnected && this.socket?.connected === true;
+	}
 
-      this.socket.emit('auth:login', { email, password }, (response: LoginResponse) => {
-        if (response.success) {
-          resolve(response);
-        } else {
-          reject(new Error(response.message || 'Login failed'));
-        }
-      });
-    });
-  }
+	// Auth methods
+	login(email: string, password: string): Promise<LoginResponse> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  checkPermission(userId: string, module: string, action: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit(
+				"auth:login",
+				{ email, password },
+				(response: LoginResponse) => {
+					if (response.success) {
+						resolve(response);
+					} else {
+						reject(new Error(response.message || "Login failed"));
+					}
+				},
+			);
+		});
+	}
 
-      this.socket.emit('auth:check-permission', { userId, module, action }, (response: PermissionCheckResponse) => {
-        if (response.success) {
-          resolve(response.hasPermission);
-        } else {
-          reject(new Error('Permission check failed'));
-        }
-      });
-    });
-  }
+	checkPermission(
+		userId: string,
+		module: string,
+		action: string,
+	): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  getCurrentUser(): Promise<User> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit(
+				"auth:check-permission",
+				{ userId, module, action },
+				(response: PermissionCheckResponse) => {
+					if (response.success) {
+						resolve(response.hasPermission);
+					} else {
+						reject(new Error("Permission check failed"));
+					}
+				},
+			);
+		});
+	}
 
-      this.socket.emit('auth:me', (response: { success: boolean; user?: User; message?: string }) => {
-        if (response.success && response.user) {
-          resolve(response.user);
-        } else {
-          reject(new Error(response.message || 'Failed to get user info'));
-        }
-      });
-    });
-  }
+	getCurrentUser(): Promise<User> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  // Workspace methods
-  getWorkspaces(): Promise<Workspace[]> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit(
+				"auth:me",
+				(response: { success: boolean; user?: User; message?: string }) => {
+					if (response.success && response.user) {
+						resolve(response.user);
+					} else {
+						reject(new Error(response.message || "Failed to get user info"));
+					}
+				},
+			);
+		});
+	}
 
-      this.socket.emit('workspaces:list', {}, (response: { success: boolean; workspaces?: Workspace[] }) => {
-        if (response.success && response.workspaces) {
-          resolve(response.workspaces);
-        } else {
-          reject(new Error('Failed to get workspaces'));
-        }
-      });
-    });
-  }
+	// Workspace methods
+	getWorkspaces(): Promise<Workspace[]> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  createWorkspace(workspaceData: WorkspaceCreateData): Promise<Workspace> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit(
+				"workspaces:list",
+				{},
+				(response: { success: boolean; workspaces?: Workspace[] }) => {
+					if (response.success && response.workspaces) {
+						resolve(response.workspaces);
+					} else {
+						reject(new Error("Failed to get workspaces"));
+					}
+				},
+			);
+		});
+	}
 
-      this.socket.emit('workspaces:create', workspaceData, (response: { success: boolean; workspace?: Workspace; message?: string }) => {
-        if (response.success && response.workspace) {
-          resolve(response.workspace);
-        } else {
-          reject(new Error(response.message || 'Failed to create workspace'));
-        }
-      });
-    });
-  }
+	createWorkspace(workspaceData: WorkspaceCreateData): Promise<Workspace> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  updateWorkspace(id: string, updates: Partial<WorkspaceUpdateData>): Promise<Workspace> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit(
+				"workspaces:create",
+				workspaceData,
+				(response: {
+					success: boolean;
+					workspace?: Workspace;
+					message?: string;
+				}) => {
+					if (response.success && response.workspace) {
+						resolve(response.workspace);
+					} else {
+						reject(new Error(response.message || "Failed to create workspace"));
+					}
+				},
+			);
+		});
+	}
 
-      this.socket.emit('workspaces:update', { id, ...updates }, (response: { success: boolean; workspace?: Workspace; message?: string }) => {
-        if (response.success && response.workspace) {
-          resolve(response.workspace);
-        } else {
-          reject(new Error(response.message || 'Failed to update workspace'));
-        }
-      });
-    });
-  }
+	updateWorkspace(
+		id: string,
+		updates: Partial<WorkspaceUpdateData>,
+	): Promise<Workspace> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  deleteWorkspace(id: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit(
+				"workspaces:update",
+				{ id, ...updates },
+				(response: {
+					success: boolean;
+					workspace?: Workspace;
+					message?: string;
+				}) => {
+					if (response.success && response.workspace) {
+						resolve(response.workspace);
+					} else {
+						reject(new Error(response.message || "Failed to update workspace"));
+					}
+				},
+			);
+		});
+	}
 
-      this.socket.emit('workspaces:delete', { id }, (response: any) => {
-        if (response.success) {
-          resolve();
-        } else {
-          reject(new Error(response.message || 'Failed to delete workspace'));
-        }
-      });
-    });
-  }
+	deleteWorkspace(id: string): Promise<void> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  // Project methods
-  getProjects(workspaceId: string): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit("workspaces:delete", { id }, (response: any) => {
+				if (response.success) {
+					resolve();
+				} else {
+					reject(new Error(response.message || "Failed to delete workspace"));
+				}
+			});
+		});
+	}
 
-      this.socket.emit('projects:list', { workspaceId }, (response: any) => {
-        if (response.success) {
-          resolve(response.projects);
-        } else {
-          reject(new Error(response.message || 'Failed to get projects'));
-        }
-      });
-    });
-  }
+	// Project methods
+	getProjects(workspaceId: string): Promise<any[]> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  createProject(projectData: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit("projects:list", { workspaceId }, (response: any) => {
+				if (response.success) {
+					resolve(response.projects);
+				} else {
+					reject(new Error(response.message || "Failed to get projects"));
+				}
+			});
+		});
+	}
 
-      this.socket.emit('projects:create', projectData, (response: any) => {
-        if (response.success) {
-          resolve(response.project);
-        } else {
-          reject(new Error(response.message || 'Failed to create project'));
-        }
-      });
-    });
-  }
+	createProject(projectData: any): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  // Workflow methods
-  getWorkflows(projectId: string): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit("projects:create", projectData, (response: any) => {
+				if (response.success) {
+					resolve(response.project);
+				} else {
+					reject(new Error(response.message || "Failed to create project"));
+				}
+			});
+		});
+	}
 
-      this.socket.emit('workflows:list', { projectId }, (response: any) => {
-        if (response.success) {
-          resolve(response.workflows);
-        } else {
-          reject(new Error(response.message || 'Failed to get workflows'));
-        }
-      });
-    });
-  }
+	// Workflow methods
+	getWorkflows(projectId: string): Promise<any[]> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  createWorkflow(workflowData: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit("workflows:list", { projectId }, (response: any) => {
+				if (response.success) {
+					resolve(response.workflows);
+				} else {
+					reject(new Error(response.message || "Failed to get workflows"));
+				}
+			});
+		});
+	}
 
-      this.socket.emit('workflows:create', workflowData, (response: any) => {
-        if (response.success) {
-          resolve(response.workflow);
-        } else {
-          reject(new Error(response.message || 'Failed to create workflow'));
-        }
-      });
-    });
-  }
+	createWorkflow(workflowData: any): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  executeWorkflow(workflowId: string, trigger = 'manual'): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit("workflows:create", workflowData, (response: any) => {
+				if (response.success) {
+					resolve(response.workflow);
+				} else {
+					reject(new Error(response.message || "Failed to create workflow"));
+				}
+			});
+		});
+	}
 
-      this.socket.emit('workflows:execute', { workflowId, trigger }, (response: any) => {
-        if (response.success) {
-          resolve(response);
-        } else {
-          reject(new Error(response.message || 'Failed to execute workflow'));
-        }
-      });
-    });
-  }
+	executeWorkflow(workflowId: string, trigger = "manual"): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  // Settings methods
-  getUserSettings(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit(
+				"workflows:execute",
+				{ workflowId, trigger },
+				(response: any) => {
+					if (response.success) {
+						resolve(response);
+					} else {
+						reject(new Error(response.message || "Failed to execute workflow"));
+					}
+				},
+			);
+		});
+	}
 
-      this.socket.emit('settings:get', {}, (response: any) => {
-        if (response.success) {
-          resolve(response.settings);
-        } else {
-          reject(new Error(response.message || 'Failed to get settings'));
-        }
-      });
-    });
-  }
+	// Settings methods
+	getUserSettings(): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  updateUserSettings(settings: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject(new Error('Socket not connected'));
-        return;
-      }
+			this.socket.emit("settings:get", {}, (response: any) => {
+				if (response.success) {
+					resolve(response.settings);
+				} else {
+					reject(new Error(response.message || "Failed to get settings"));
+				}
+			});
+		});
+	}
 
-      this.socket.emit('settings:update', settings, (response: any) => {
-        if (response.success) {
-          resolve(response.settings);
-        } else {
-          reject(new Error(response.message || 'Failed to update settings'));
-        }
-      });
-    });
-  }
+	updateUserSettings(settings: any): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error("Socket not connected"));
+				return;
+			}
 
-  // Event listeners
-  onWorkspaceCreated(callback: (workspace: any) => void): void {
-    this.socket?.on('workspaces:created', callback);
-  }
+			this.socket.emit("settings:update", settings, (response: any) => {
+				if (response.success) {
+					resolve(response.settings);
+				} else {
+					reject(new Error(response.message || "Failed to update settings"));
+				}
+			});
+		});
+	}
 
-  onWorkspaceUpdated(callback: (workspace: any) => void): void {
-    this.socket?.on('workspaces:updated', callback);
-  }
+	// Event listeners
+	onWorkspaceCreated(callback: (workspace: any) => void): void {
+		this.socket?.on("workspaces:created", callback);
+	}
 
-  onWorkspaceDeleted(callback: (data: { id: string }) => void): void {
-    this.socket?.on('workspaces:deleted', callback);
-  }
+	onWorkspaceUpdated(callback: (workspace: any) => void): void {
+		this.socket?.on("workspaces:updated", callback);
+	}
 
-  onProjectCreated(callback: (project: any) => void): void {
-    this.socket?.on('projects:created', callback);
-  }
+	onWorkspaceDeleted(callback: (data: { id: string }) => void): void {
+		this.socket?.on("workspaces:deleted", callback);
+	}
 
-  onWorkflowExecutionCompleted(callback: (data: any) => void): void {
-    this.socket?.on('workflows:execution-completed', callback);
-  }
+	onProjectCreated(callback: (project: any) => void): void {
+		this.socket?.on("projects:created", callback);
+	}
 
-  // Remove all listeners
-  removeAllListeners(): void {
-    this.socket?.removeAllListeners();
-  }
+	onWorkflowExecutionCompleted(callback: (data: any) => void): void {
+		this.socket?.on("workflows:execution-completed", callback);
+	}
+
+	// Remove all listeners
+	removeAllListeners(): void {
+		this.socket?.removeAllListeners();
+	}
 }
 
 export const socketService = new SocketService();
