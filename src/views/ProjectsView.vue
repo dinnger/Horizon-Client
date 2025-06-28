@@ -13,14 +13,16 @@
           </svg>
           Nuevo Proyecto
         </button>
-      </div> <!-- Projects Grid -->
+      </div>
+
+      <!-- Projects Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div v-for="project in projectsWithWorkflows" :key="project.id" @click="goToProject(project.id)"
           class="card bg-base-200 shadow-xl backdrop-blur-sm border border-base-300 hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-105">
           <div class="card-body">
             <div class="flex justify-between items-start mb-4">
               <h2 class="card-title text-lg">{{ project.name }}</h2>
-              <div class="dropdown dropdown-end">
+              <div class="dropdown dropdown-end" @click.stop.prevent>
                 <div tabindex="0" role="button" class="btn btn-ghost btn-sm" @click.stop>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -28,8 +30,8 @@
                   </svg>
                 </div>
                 <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                  <li><a @click.stop="editProject(project)">Editar</a></li>
-                  <li><a @click.stop="deleteProject(project.id)" class="text-error">Eliminar</a></li>
+                  <li><a @click.stop.prevent="editProject(project)">Editar</a></li>
+                  <li><a @click.stop.prevent="deleteProject(project.id)" class="text-error">Eliminar</a></li>
                 </ul>
               </div>
             </div>
@@ -48,8 +50,13 @@
           </div>
         </div>
 
+        <div v-if="projectsWithWorkflows.length === 0 && !projectsStore.showEmptyState"
+          class="flex justify-center col-span-full ">
+          <span class="loading loading-spinner mr-2"></span> Cargando proyectos...
+        </div>
+
         <!-- Empty State -->
-        <div v-if="projectsWithWorkflows.length === 0"
+        <div v-if="projectsWithWorkflows.length === 0 && projectsStore.showEmptyState"
           class="col-span-full flex flex-col items-center justify-center py-16 text-center">
           <div class="w-24 h-24 bg-base-300 rounded-full flex items-center justify-center mb-4">
             <svg class="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +115,7 @@ import { useProjectWorkflows } from '@/composables/useProjectWorkflows'
 import type { Project } from '@/stores'
 
 const router = useRouter()
-const { projectsStore, workflowsStore, getProjectsWithWorkflows, initializeStores, deleteProjectAndWorkflows } = useProjectWorkflows()
+const { projectsStore, workflowsStore, getProjectsWithWorkflows, deleteProjectAndWorkflows } = useProjectWorkflows()
 const showCreateModal = ref(false)
 
 const newProject = reactive({
@@ -120,7 +127,7 @@ const newProject = reactive({
 const projectsWithWorkflows = getProjectsWithWorkflows
 
 onMounted(() => {
-  initializeStores()
+  projectsStore.initializeData()
 })
 
 const goToProject = (projectId: string) => {

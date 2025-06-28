@@ -13,19 +13,13 @@
           <p class="text-base-content/70 mt-1">{{ project?.description }}</p>
         </div>
         <div class="flex space-x-2">
-          <button @click="showWorkflowModal = true" class="btn btn-primary glass">
+          <button @click="showWorkflowModal = true" class="btn btn-primary">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             Nuevo Workflow
           </button>
-          <button @click="openCanvas" class="btn btn-secondary glass">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
-            </svg>
-            Abrir Canvas
-          </button>
+
         </div>
       </div>
 
@@ -106,7 +100,7 @@
                   <th>Estado</th>
                   <th>Última Ejecución</th>
                   <th>Duración</th>
-                  <th>Acciones</th>
+                  <th class="w-[120px]">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -192,14 +186,14 @@ import type { Workflow, Project } from '@/stores'
 
 const route = useRoute()
 const router = useRouter()
-const { projectsStore, workflowsStore, getProjectWithStats, initializeStores } = useProjectWorkflows()
+const { projectsStore, workflowsStore, getProjectWithStats } = useProjectWorkflows()
 const showWorkflowModal = ref(false)
 
 const projectId = computed(() => route.params.id as string)
 const project = computed(() => projectsStore.getProjectById(projectId.value))
-const workflows = computed(() => workflowsStore.getWorkflowsByProjectId(projectId.value))
-const activeWorkflows = computed(() => workflowsStore.getActiveWorkflowsCount(projectId.value))
-const projectStats = computed(() => workflowsStore.getWorkflowStats(projectId.value))
+const workflows = computed(() => workflowsStore.workflows)
+const activeWorkflows = computed(() => workflowsStore.getActiveWorkflowsCount())
+const projectStats = computed(() => workflowsStore.getWorkflowStats())
 
 const newWorkflow = reactive({
   name: '',
@@ -207,7 +201,7 @@ const newWorkflow = reactive({
 })
 
 onMounted(() => {
-  initializeStores()
+  workflowsStore.initializeData(projectId.value)
 })
 
 const createWorkflow = () => {
@@ -230,7 +224,7 @@ const runWorkflow = (workflowId: string) => {
 }
 
 const editWorkflow = (workflow: Workflow) => {
-  console.log('Edit workflow:', workflow)
+  router.push(`/projects/${workflow.id}/canvas`)
   // TODO: Implement edit functionality
 }
 
@@ -240,10 +234,6 @@ const deleteWorkflow = (workflowId: string) => {
 
 const viewWorkflowDetail = (workflowId: string) => {
   router.push(`/projects/${projectId.value}/workflows/${workflowId}`)
-}
-
-const openCanvas = () => {
-  router.push(`/projects/${route.params.id}/canvas`)
 }
 
 const getStatusColor = (status: string) => {

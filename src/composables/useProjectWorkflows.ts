@@ -1,33 +1,33 @@
-import { computed } from "vue";
-import { useProjectsStore } from "../stores/projects";
-import { useWorkflowsStore } from "../stores/workflows";
+import { computed } from 'vue'
+import { useProjectsStore } from '../stores/projects'
+import { useWorkflowsStore } from '../stores/workflows'
 
 /**
  * Composable que combina la funcionalidad de proyectos y workflows
  * para operaciones que requieren datos de ambos stores
  */
 export function useProjectWorkflows() {
-	const projectsStore = useProjectsStore();
-	const workflowsStore = useWorkflowsStore();
+	const projectsStore = useProjectsStore()
+	const workflowsStore = useWorkflowsStore()
 
 	/**
 	 * Obtiene las estadísticas completas de un proyecto incluyendo workflows
 	 */
 	const getProjectWithStats = computed(() => {
 		return (projectId: string) => {
-			const project = projectsStore.getProjectById(projectId);
-			if (!project) return null;
+			const project = projectsStore.getProjectById(projectId)
+			if (!project) return null
 
-			const workflowStats = workflowsStore.getWorkflowStats(projectId);
-			const activeWorkflows = workflowsStore.getActiveWorkflowsCount(projectId);
+			const workflowStats = workflowsStore.getWorkflowStats()
+			const activeWorkflows = workflowsStore.getActiveWorkflowsCount()
 
 			return {
 				...project,
 				stats: workflowStats,
-				activeWorkflowsCount: activeWorkflows,
-			};
-		};
-	});
+				activeWorkflowsCount: activeWorkflows
+			}
+		}
+	})
 
 	/**
 	 * Obtiene todos los proyectos con sus workflows asociados
@@ -35,11 +35,11 @@ export function useProjectWorkflows() {
 	const getProjectsWithWorkflows = computed(() => {
 		return projectsStore.projects.map((project) => ({
 			...project,
-			workflows: workflowsStore.getWorkflowsByProjectId(project.id),
-			stats: workflowsStore.getWorkflowStats(project.id),
-			activeWorkflowsCount: workflowsStore.getActiveWorkflowsCount(project.id),
-		}));
-	});
+			workflows: workflowsStore.workflows.values,
+			stats: workflowsStore.getWorkflowStats(),
+			activeWorkflowsCount: workflowsStore.getActiveWorkflowsCount()
+		}))
+	})
 
 	/**
 	 * Elimina un proyecto y todos sus workflows asociados
@@ -47,45 +47,32 @@ export function useProjectWorkflows() {
 	const deleteProjectAndWorkflows = async (projectId: string) => {
 		try {
 			// Primero eliminar todos los workflows del proyecto
-			const success = workflowsStore.deleteWorkflowsByProjectId(projectId);
-
+			const success = workflowsStore.deleteWorkflowsByProjectId(projectId)
+			console.log('🌱 Eliminando workflows...', success)
 			if (success) {
 				// Luego eliminar el proyecto
-				return projectsStore.deleteProject(projectId);
+				return projectsStore.deleteProject(projectId)
 			}
 
-			return false;
+			return false
 		} catch (error) {
-			console.error("Error deleting project and workflows:", error);
-			return false;
+			console.error('Error deleting project and workflows:', error)
+			return false
 		}
-	};
-	/**
-	 * Inicializa ambos stores
-	 */
-	const initializeStores = () => {
-		try {
-			projectsStore.initializeData();
-			workflowsStore.initializeData();
-		} catch (error) {
-			console.error("Error initializing stores:", error);
-			projectsStore.setError("Error al inicializar los datos");
-			workflowsStore.setError("Error al inicializar los workflows");
-		}
-	};
+	}
 
 	/**
 	 * Obtiene estadísticas globales combinadas
 	 */
 	const getGlobalStats = computed(() => {
-		const projectStats = projectsStore.getAllProjectsStats;
-		const workflowStats = workflowsStore.getAllWorkflowStats;
+		const projectStats = projectsStore.getAllProjectsStats
+		const workflowStats = workflowsStore.getAllWorkflowStats
 
 		return {
 			projects: projectStats,
-			workflows: workflowStats,
-		};
-	});
+			workflows: workflowStats
+		}
+	})
 
 	return {
 		// Stores
@@ -98,7 +85,6 @@ export function useProjectWorkflows() {
 		getGlobalStats,
 
 		// Actions combinadas
-		deleteProjectAndWorkflows,
-		initializeStores,
-	};
+		deleteProjectAndWorkflows
+	}
 }
