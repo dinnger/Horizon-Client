@@ -35,21 +35,15 @@ export const useCanvas = defineStore('canvas', () => {
 		})
 	}
 
-	const loadInitialWorkflow = () => {
+	const loadInitialWorkflow = async () => {
 		if (!canvasInstance) return
-		const workflowData = localStorage.getItem(`workflow_${workflowId.value}`)
-		if (workflowData) {
+		const data: { workflowData: WorkflowData; version } = await workflowsStore.getWorkflowById(workflowId.value)
+		console.log('🌱 Cargando historial de flujo de trabajo...', data)
+		if (data) {
 			try {
-				const data: WorkflowData[] = JSON.parse(workflowData)
-				if (data) {
-					history.value = data
-					const lastHistory = history.value[history.value.length - 1]
-					version.value.value = lastHistory.version
-					version.value.status = 'draft'
-					canvasInstance.loadWorkflowData(lastHistory)
-				} else {
-					localStorage.removeItem(`workflow_${workflowId.value}`)
-				}
+				version.value.value = data.version
+				version.value.status = 'draft'
+				canvasInstance.loadWorkflowData(data.workflowData)
 			} catch (e) {
 				console.error('Error parsing workflow data:', e)
 			}

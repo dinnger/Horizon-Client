@@ -276,6 +276,25 @@ class SocketService {
 		})
 	}
 
+	getWorkflowsById(id: string): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error('Socket not connected'))
+				return
+			}
+
+			console.log('id', id)
+			this.socket.emit('workflows:get', { id }, (response: any) => {
+				console.log('response', response)
+				if (response.success) {
+					resolve(response.workflow)
+				} else {
+					reject(new Error(response.message || 'Failed to get workflow'))
+				}
+			})
+		})
+	}
+
 	createWorkflow(workflowData: any): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if (!this.socket) {

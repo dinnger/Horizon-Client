@@ -22,10 +22,6 @@ export const useWorkflowsStore = defineStore('workflows', () => {
 	const error = ref<string | null>(null)
 
 	// Computed properties
-	const getWorkflowById = computed(() => {
-		return (id: string) => workflows.value.find((w) => w.id === id)
-	})
-
 	const getActiveWorkflowsCount = computed(() => {
 		return () => {
 			const projectWorkflows = workflows.value
@@ -113,6 +109,10 @@ export const useWorkflowsStore = defineStore('workflows', () => {
 			}
 		}
 		console.log(workflows.value)
+	}
+
+	const getWorkflowById = async (id: string) => {
+		return await socketService.getWorkflowsById(id)
 	}
 
 	const createWorkflow = async (workflowData: Omit<Workflow, 'id' | 'createdAt' | 'updatedAt' | 'lastRun'>) => {
