@@ -37,9 +37,8 @@ export const useCanvas = defineStore('canvas', () => {
 
 	const loadInitialWorkflow = async () => {
 		if (!canvasInstance) return
-		const data: { workflowData: WorkflowData; version } = await workflowsStore.getWorkflowById(workflowId.value)
-		console.log('🌱 Cargando historial de flujo de trabajo...', data)
-		if (data) {
+		const data: { workflowData: WorkflowData; version: string } = await workflowsStore.getWorkflowById(workflowId.value)
+		if (data?.workflowData) {
 			try {
 				version.value.value = data.version
 				version.value.status = 'draft'

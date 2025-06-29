@@ -108,7 +108,6 @@ export const useWorkflowsStore = defineStore('workflows', () => {
 				console.error('Error parsing saved workflows:', error)
 			}
 		}
-		console.log(workflows.value)
 	}
 
 	const getWorkflowById = async (id: string) => {
