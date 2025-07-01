@@ -130,7 +130,10 @@ onMounted(() => {
   canvasInstance.subscriber("node_added", (e: INodeCanvasAdd) => {
     console.log('Nodo añadido:', e)
     nodeOrigin.value = e
-    nodesStore.showNodePanel(e)
+    nodesStore.showNodePanel()
+  })
+  canvasInstance.subscriber("node_dbclick", (e: INodeCanvasAdd) => {
+    console.log('Nodo añadido:', e)
   })
 
   canvasStore.initCanvas({ flow: router.currentRoute.value.params.id as string, canvasInstance })
