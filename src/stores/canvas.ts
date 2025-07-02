@@ -3,6 +3,7 @@ import type { Canvas } from '@canvas/canvas'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useWorkflowsStore } from '@/stores/workflows'
+import socketService from '@/services/socket'
 
 type WorkflowData = {
 	nodes: { [key: string]: INodeCanvas }
@@ -47,26 +48,11 @@ export const useCanvas = defineStore('canvas', () => {
 				console.error('Error parsing workflow data:', e)
 			}
 		} else {
-			// Añadir un nodo inicial de ejemplo
-			canvasInstance.actionAddNode({
-				node: {
-					type: 'input',
-					design: { x: 60, y: 60 },
-					tags: ['input'],
-					info: {
-						color: '#3498DB',
-						group: 'Input',
-						desc: 'Input 1',
-						connectors: {
-							inputs: [],
-							outputs: [{ name: 'init', nextNodeTag: 'output' }]
-						},
-						name: 'init',
-						icon: '󰐊'
-					},
-					properties: {}
-				}
+			socketService.getNodeByType('workflow_init').then((node) => {
+				console.log(' node', node)
+				canvasInstance.actionAddNode({ node: { ...node, design: { x: 60, y: 60 } } })
 			})
+			// Añadir un nodo inicial de ejemplo
 		}
 
 		console.log('initCanvas')

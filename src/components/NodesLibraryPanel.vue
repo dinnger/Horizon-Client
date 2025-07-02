@@ -179,7 +179,6 @@ const searchQuery = ref('')
 const selectedGroup = ref<string | null>(null)
 const selectedSubgroup = ref<string | null>(null)
 
-console.log('isVisible', nodesStore.isNodePanelVisible)
 const isVisible = computed(() => nodesStore.isNodePanelVisible)
 const nodeGroups = computed(() => nodesStore.nodeGroups)
 const getNodesBySubgroup = computed(() => nodesStore.getNodesBySubgroup)

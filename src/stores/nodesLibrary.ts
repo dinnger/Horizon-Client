@@ -30,17 +30,7 @@ export const useNodesLibraryStore = defineStore('nodesLibrary', () => {
 				type,
 				design: { x: 0, y: 0 },
 				tags: nodeData.dependencies || [],
-				info: {
-					name: nodeData.name,
-					desc: nodeData.info.description || nodeData.info.title,
-					icon: nodeData.info.icon || '●',
-					group: Array.isArray(nodeData.group) ? nodeData.group[0] : nodeData.group,
-					color: nodeData.info.color || '#3498DB',
-					connectors: nodeData.info.connectors || {
-						inputs: [{ name: 'init' }],
-						outputs: [{ name: 'response' }, { name: 'error' }]
-					}
-				},
+				info: nodeData.info,
 				properties: nodeData.properties || {}
 			}))
 

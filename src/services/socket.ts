@@ -3,22 +3,13 @@ import { io, type Socket } from 'socket.io-client'
 import type {
 	LoginResponse,
 	PermissionCheckResponse,
-	SocketResponse,
 	User,
 	Workspace,
-	Project,
 	Workflow,
-	UserSettings,
-	WorkflowExecution,
-	LoginData,
-	PermissionCheckData,
 	WorkspaceCreateData,
-	WorkspaceUpdateData,
-	ProjectCreateData,
-	WorkflowCreateData,
-	WorkflowExecuteData,
-	SettingsUpdateData
+	WorkspaceUpdateData
 } from '../types/socket'
+import type { INodeCanvas } from '@canvas/interfaz/node.interface'
 
 class SocketService {
 	private socket: Socket | null = null
@@ -425,7 +416,7 @@ class SocketService {
 		})
 	}
 
-	getNodeByType(type: string): Promise<IClassNode> {
+	getNodeByType(type: string): Promise<INodeCanvas> {
 		return new Promise((resolve, reject) => {
 			if (!this.socket) {
 				reject(new Error('Socket not connected'))
