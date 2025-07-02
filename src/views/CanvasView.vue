@@ -54,6 +54,14 @@
     <!-- Diálogo de propiedades del nodo -->
     <NodePropertiesDialog :is-visible="showNodePropertiesDialog" :node-data="selectedNodeForEdit"
       @close="closeNodePropertiesDialog" @save="handleNodePropertiesSave" />
+
+    <!-- Menú contextual del nodo -->
+    <NodeContextMenu :is-visible="showContextMenu" :selected-nodes="selectedNodesForContext" @close="closeContextMenu"
+      @delete="handleNodesDelete" @duplicate="handleNodeDuplicate" @rename="handleNodeRename" />
+
+    <!-- Menú contextual de conexión -->
+    <ConnectionContextMenu :is-visible="showConnectionContextMenu" :connection-info="selectedConnectionForContext"
+      @close="closeConnectionContextMenu" @delete="handleConnectionDelete" />
   </div>
 </template>
 
@@ -63,9 +71,12 @@ import { Canvas } from '@canvas/canvas.ts'
 import { useSettingsStore, useNodesLibraryStore, useCanvas } from '@/stores'
 import NodesLibraryPanel from '@/components/NodesLibraryPanel.vue'
 import NodePropertiesDialog from '@/components/NodePropertiesDialog.vue'
+import NodeContextMenu from '@/components/NodeContextMenu.vue'
+import ConnectionContextMenu from '@/components/ConnectionContextMenu.vue'
 import VersionControlPanel from '@/components/VersionControlPanel.vue'
 import type { INodeCanvas, INodeCanvasAdd } from '@canvas/interfaz/node.interface'
 import { useRouter } from 'vue-router'
+import type { Point } from '@canvas/canvasConnector'
 
 const settingsStore = useSettingsStore()
 const nodesStore = useNodesLibraryStore()
@@ -83,6 +94,20 @@ const currentMousePosition = ref({ x: 0, y: 0 })
 // Estados para el diálogo de propiedades
 const showNodePropertiesDialog = ref(false)
 const selectedNodeForEdit = ref<INodeCanvas | null>(null)
+
+// Estados para el menú contextual
+const showContextMenu = ref(false)
+const selectedNodesForContext = ref<INodeCanvas[]>([])
+
+// Estados para el menú contextual de conexión
+const showConnectionContextMenu = ref(false)
+const selectedConnectionForContext = ref<{
+  id: string
+  nodeOrigin: INodeCanvas
+  nodeDestiny: INodeCanvas
+  input: string
+  output: string
+} | null>(null)
 
 let canvasInstance: Canvas | null = null
 
@@ -142,6 +167,88 @@ const handleNodePropertiesSave = (updatedNode: INodeCanvas) => {
   console.log('Cambios guardados en el nodo')
 }
 
+// Funciones para el menú contextual
+const closeContextMenu = () => {
+  showContextMenu.value = false
+  selectedNodesForContext.value = []
+}
+
+const handleNodesDelete = (nodes: INodeCanvas[]) => {
+  if (!canvasInstance || nodes.length === 0) return
+
+  // Confirmar eliminación si hay múltiples nodos
+  const confirmMessage = nodes.length === 1
+    ? `¿Estás seguro de que quieres eliminar el nodo "${nodes[0].info.name}"?`
+    : `¿Estás seguro de que quieres eliminar ${nodes.length} nodos?`
+
+  if (confirm(confirmMessage)) {
+    const nodeIds = nodes.map(n => n.id).filter((id): id is string => id !== undefined)
+    canvasInstance.actionDeleteNodes({ ids: nodeIds })
+    console.log('Nodos eliminados:', nodes.map(n => n.info.name))
+
+    // Marcar cambios en el store
+    // canvasStore.markChanges()
+  }
+}
+
+const handleNodeDuplicate = (node: INodeCanvas) => {
+  if (!canvasInstance) return
+
+  // Crear una copia del nodo con nueva posición (offset para evitar superposición)
+  const duplicatedNode: INodeCanvas = {
+    ...JSON.parse(JSON.stringify(node)),
+    id: undefined, // Se generará un nuevo ID
+    info: {
+      ...node.info,
+      name: `${node.info.name} (Copia)`
+    },
+    design: {
+      x: node.design.x + 50,
+      y: node.design.y + 50
+    }
+  }
+
+  // Añadir el nodo duplicado
+  const nodeId = canvasInstance.actionAddNode({
+    node: duplicatedNode,
+    isManual: true
+  })
+
+  console.log(`Nodo ${node.info.name} duplicado con ID: ${nodeId}`)
+}
+
+const handleNodeRename = (node: INodeCanvas, newName: string) => {
+  if (!canvasInstance || !node.id) return
+
+  // Actualizar el nombre usando el método del canvas
+  canvasInstance.actionUpdateNodeName({ id: node.id, newName })
+  console.log(`Nombre cambiado de "${node.info.name}" a "${newName}"`)
+
+  // Marcar cambios en el store
+  // canvasStore.markChanges()
+}
+
+// Funciones para el menú contextual de conexión
+const closeConnectionContextMenu = () => {
+  showConnectionContextMenu.value = false
+  selectedConnectionForContext.value = null
+}
+
+const handleConnectionDelete = (connectionId: string) => {
+  if (!canvasInstance) return
+
+  // Confirmar eliminación de la conexión
+  const confirmMessage = '¿Estás seguro de que quieres eliminar esta conexión?'
+
+  if (confirm(confirmMessage)) {
+    canvasInstance.actionDeleteConnectionById({ id: connectionId })
+    console.log('Conexión eliminada:', connectionId)
+
+    // Marcar cambios en el store
+    // canvasStore.markChanges()
+  }
+}
+
 onMounted(() => {
   if (!contentCanvas.value) return
 
@@ -169,6 +276,28 @@ onMounted(() => {
     }
     selectedNodeForEdit.value = e[0]
     showNodePropertiesDialog.value = true
+  })
+  canvasInstance.subscriber("node_context", (e: { canvasTranslate: Point, selected: INodeCanvas[] }) => {
+    console.log('Nodo contextual:', e)
+    // Guardar los nodos seleccionados para el menú contextual
+    selectedNodesForContext.value = e.selected
+    // Mostrar el menú contextual centrado
+    showContextMenu.value = true
+  })
+  canvasInstance.subscriber("node_connection_context", (e: {
+    id: string,
+    nodeOrigin: INodeCanvas,
+    nodeDestiny: INodeCanvas,
+    input: string,
+    output: string
+  }) => {
+    console.log('Nodo conexión contextual:', e)
+
+    // Guardar la información de la conexión para el menú contextual
+    selectedConnectionForContext.value = e
+
+    // Mostrar el menú contextual de conexión centrado
+    showConnectionContextMenu.value = true
   })
 
   canvasStore.initCanvas({ flow: router.currentRoute.value.params.id as string, canvasInstance })
