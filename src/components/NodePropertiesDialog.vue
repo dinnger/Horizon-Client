@@ -211,6 +211,7 @@
 import { ref, computed, watch, reactive } from 'vue'
 import type { INodeCanvas } from '@canvas/interfaz/node.interface'
 import type { INodePropertiesType } from '@canvas/interfaz/node.properties.interface'
+import { useNodesLibraryStore } from '@/stores'
 
 interface Props {
   isVisible: boolean
@@ -221,6 +222,8 @@ interface Emits {
   close: []
   save: [nodeData: INodeCanvas]
 }
+
+const nodesLibraryStore = useNodesLibraryStore()
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
@@ -354,13 +357,10 @@ const getCodePlaceholder = (lang: 'sql' | 'json' | 'js' | 'string') => {
 }
 
 const resetChanges = () => {
-  initializeEditableData()
-  for (const key of Object.keys(jsonErrors)) {
-    delete jsonErrors[key]
-  }
-  for (const key of Object.keys(codeErrors)) {
-    delete codeErrors[key]
-  }
+  if (!props.nodeData) return
+  nodesLibraryStore.getNodeInfo(props.nodeData.type).then((node) => {
+    editableProperties.value = JSON.parse(JSON.stringify(node?.properties || {}))
+  })
 }
 
 const closeDialog = () => {

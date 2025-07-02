@@ -9,8 +9,7 @@
           </svg>
         </button>
         <div>
-          <h1 class="text-xl font-bold">Canvas - {{ projectName }}</h1>
-          <p class="text-sm opacity-70 -mt-1">Diseña tu workflow visualmente </p>
+          <h1 class="text-xl font-bold">{{ projectName }}</h1>
         </div>
       </div>
 
@@ -30,8 +29,9 @@
       </div>
 
       <div class="absolute top-[38px] right-1/2 translate-6/12  flex gap-2 p-2 bg-black/20 backdrop-blur-sm rounded-md">
-        <button class="btn btn-sm btn-soft btn-primary">
+        <button class="btn btn-sm btn-soft btn-primary" @click="handleExecuteWorkflow" :disabled="isExecuting">
           <span class="mdi mdi-play"></span>
+          {{ isExecuting ? 'Ejecutando...' : 'Ejecutar' }}
         </button>
         <h2 class="text-[10px]">Version: {{ canvasStore.version.value }}</h2>
       </div>
@@ -66,17 +66,17 @@
 </template>
 
 <script setup lang="ts">
+import type { INodeCanvas, INodeCanvasAdd } from '@canvas/interfaz/node.interface'
+import type { Point } from '@canvas/canvasConnector'
 import { ref, onMounted } from 'vue'
 import { Canvas } from '@canvas/canvas.ts'
+import { useRouter } from 'vue-router'
 import { useSettingsStore, useNodesLibraryStore, useCanvas } from '@/stores'
 import NodesLibraryPanel from '@/components/NodesLibraryPanel.vue'
 import NodePropertiesDialog from '@/components/NodePropertiesDialog.vue'
 import NodeContextMenu from '@/components/NodeContextMenu.vue'
 import ConnectionContextMenu from '@/components/ConnectionContextMenu.vue'
 import VersionControlPanel from '@/components/VersionControlPanel.vue'
-import type { INodeCanvas, INodeCanvasAdd } from '@canvas/interfaz/node.interface'
-import { useRouter } from 'vue-router'
-import type { Point } from '@canvas/canvasConnector'
 
 const settingsStore = useSettingsStore()
 const nodesStore = useNodesLibraryStore()
@@ -90,6 +90,7 @@ const nodeOrigin = ref<INodeCanvasAdd | null>(null)
 const projectName = ref('Web Application')
 const nextNodePosition = ref({ x: 100, y: 100 })
 const currentMousePosition = ref({ x: 0, y: 0 })
+const isExecuting = ref(false)
 
 // Estados para el diálogo de propiedades
 const showNodePropertiesDialog = ref(false)
@@ -135,8 +136,7 @@ const handleNodeSelection = (selectedNode: INodeCanvas) => {
       connectorType: nodeOrigin.value.connection.type,
       connectorName: nodeOrigin.value.connection.name
     },
-    node: nodeToAdd,
-    isManual: true
+    node: nodeToAdd
   })
   console.log(`Nodo ${selectedNode.info.name} añadido con ID: ${nodeId}`)
 }
@@ -154,17 +154,8 @@ const closeNodePropertiesDialog = () => {
 }
 
 const handleNodePropertiesSave = (updatedNode: INodeCanvas) => {
-  if (!canvasInstance) return
-
-  // Aquí puedes implementar la lógica para actualizar el nodo en el canvas
-  console.log('Nodo actualizado:', updatedNode)
-
-  // Por ejemplo, podrías llamar a un método del canvas para actualizar el nodo
-  // canvasInstance.updateNode(updatedNode.id, updatedNode)
-
-  // Marcar cambios
-  // Esto depende de cómo esté implementado el store, por ahora solo mostramos un mensaje
-  console.log('Cambios guardados en el nodo')
+  if (!canvasInstance || !updatedNode.id) return
+  canvasInstance.actionUpdateNodeProperties({ id: updatedNode.id, properties: updatedNode.properties })
 }
 
 // Funciones para el menú contextual
@@ -210,8 +201,7 @@ const handleNodeDuplicate = (node: INodeCanvas) => {
 
   // Añadir el nodo duplicado
   const nodeId = canvasInstance.actionAddNode({
-    node: duplicatedNode,
-    isManual: true
+    node: duplicatedNode
   })
 
   console.log(`Nodo ${node.info.name} duplicado con ID: ${nodeId}`)
@@ -246,6 +236,31 @@ const handleConnectionDelete = (connectionId: string) => {
 
     // Marcar cambios en el store
     // canvasStore.markChanges()
+  }
+}
+
+// Función para manejar la ejecución del workflow
+const handleExecuteWorkflow = async () => {
+  if (isExecuting.value) return
+
+  isExecuting.value = true
+
+  try {
+    const result = await canvasStore.execute()
+
+    if (result?.success) {
+      console.log('Workflow ejecutado exitosamente')
+      // Aquí puedes agregar notificaciones de éxito
+    } else {
+      console.error('Error ejecutando workflow:', result?.message)
+      // Aquí puedes agregar notificaciones de error
+      alert(`Error ejecutando workflow: ${result?.message || 'Error desconocido'}`)
+    }
+  } catch (error) {
+    console.error('Error inesperado ejecutando workflow:', error)
+    alert('Error inesperado ejecutando workflow')
+  } finally {
+    isExecuting.value = false
   }
 }
 

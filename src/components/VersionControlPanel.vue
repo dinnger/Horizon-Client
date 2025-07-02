@@ -21,7 +21,6 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center space-x-2">
                 <span class="font-medium text-sm truncate">{{ workflow.version }}</span>
-
               </div>
               <p class="text-xs opacity-70 truncate">{{ workflow.timestamp }}</p>
             </div>

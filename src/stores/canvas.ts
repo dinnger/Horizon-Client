@@ -31,7 +31,7 @@ export const useCanvas = defineStore('canvas', () => {
 		workflowId.value = data.flow
 		canvasInstance = data.canvasInstance
 		loadInitialWorkflow()
-		canvasInstance.subscriber(['node_added', 'node_removed', 'node_moved'], (e) => {
+		canvasInstance.subscriber(['node_added', 'node_removed', 'node_moved', 'node_update_properties'], (e) => {
 			changes.value = true
 		})
 	}
@@ -49,24 +49,38 @@ export const useCanvas = defineStore('canvas', () => {
 			}
 		} else {
 			socketService.getNodeByType('workflow_init').then((node) => {
-				console.log(' node', node)
 				canvasInstance.actionAddNode({ node: { ...node, design: { x: 60, y: 60 } } })
 			})
-			// Añadir un nodo inicial de ejemplo
 		}
-
-		console.log('initCanvas')
 	}
 
-	const save = () => {
+	const save = async () => {
 		if (!canvasInstance) return
-		// const timestamp = Date.now()
-		// const lastVersion = history.value[history.value.length - 1]?.version || '0.0.0'
-		// const [major, minor, patch] = lastVersion.split('.').map(Number)
-		// version.value.value = [major, minor, (patch ?? 0) + 1].join('.')
-		workflowsStore.updateWorkflow(workflowId.value, canvasInstance.getWorkflowData())
+		await workflowsStore.updateWorkflow(workflowId.value, canvasInstance.getWorkflowData())
 		changes.value = false
-		// localStorage.setItem(`workflow_${workflowId.value}`, JSON.stringify(history.value))
+	}
+
+	const execute = async () => {
+		if (!canvasInstance) return
+
+		try {
+			// First save the current workflow
+			await save()
+
+			// Execute the workflow which will also save to file
+			const result = await socketService.executeWorkflow(workflowId.value)
+
+			if (result.success) {
+				console.log('Workflow ejecutado exitosamente:', result.executionId)
+				return { success: true, executionId: result.executionId }
+			}
+
+			console.error('Error ejecutando workflow:', result.message)
+			return { success: false, message: result.message }
+		} catch (error) {
+			console.error('Error en ejecución:', error)
+			return { success: false, message: 'Error al ejecutar workflow' }
+		}
 	}
 
 	const getHistory = (): WorkflowData[] => {
@@ -91,6 +105,7 @@ export const useCanvas = defineStore('canvas', () => {
 	return {
 		initCanvas,
 		save,
+		execute,
 		getHistory,
 		selectHistory,
 		clearHistory,
