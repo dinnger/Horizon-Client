@@ -10,26 +10,19 @@
       <div class="flex items-center justify-between p-4 border-b border-base-300">
         <div>
           <h2 class="text-lg font-bold">Librería de Nodos</h2>
-          <p class="text-sm opacity-70">Selecciona un nodo para agregar</p>
         </div>
-        <button @click="hidePanel" class="btn btn-ghost btn-circle btn-sm">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+        <button @click="hidePanel" class="btn btn-ghost  btn-sm">
+          <span class="mdi mdi-close"></span>
         </button>
       </div>
 
       <!-- Barra de búsqueda -->
       <div class="p-4 border-b border-base-300">
         <div class="form-control">
-          <div class="input-group">
-            <input v-model="searchQuery" type="text" placeholder="Buscar nodos..."
-              class="input input-bordered input-sm w-full" />
-            <button class="btn btn-square btn-sm">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+          <div class="join w-full">
+            <input v-model="searchQuery" type="text" placeholder="Buscar nodos..." class="input join-item" />
+            <button class="btn rounded-r-ful  join-item">
+              <span class="mdi mdi-magnify"></span>
             </button>
           </div>
         </div>
@@ -46,7 +39,7 @@
             <div v-for="node in searchResults" :key="node.id" @click="selectNode(node)"
               class="p-3 rounded-lg border border-base-300 hover:bg-base-200 cursor-pointer transition-colors">
               <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded flex items-center justify-center text-white text-sm"
+                <div class="w-8 h-8 rounded flex items-center justify-center text-white text-xl material-icons"
                   :style="{ backgroundColor: node.info.color }">
                   {{ node.info.icon }}
                 </div>
@@ -193,7 +186,8 @@ const getNodesBySubgroup = computed(() => nodesStore.getNodesBySubgroup)
 
 const searchResults = computed(() => {
   if (!searchQuery.value) return []
-  return nodesStore.searchNodes(searchQuery.value)
+  const data = nodesStore.searchNodes(searchQuery.value)
+  return data
 })
 
 const hidePanel = () => {

@@ -50,6 +50,10 @@
 
     <!-- Panel de librería de nodos -->
     <NodesLibraryPanel @node-selected="handleNodeSelection" @close="onPanelClose" />
+
+    <!-- Diálogo de propiedades del nodo -->
+    <NodePropertiesDialog :is-visible="showNodePropertiesDialog" :node-data="selectedNodeForEdit"
+      @close="closeNodePropertiesDialog" @save="handleNodePropertiesSave" />
   </div>
 </template>
 
@@ -58,6 +62,7 @@ import { ref, onMounted } from 'vue'
 import { Canvas } from '@canvas/canvas.ts'
 import { useSettingsStore, useNodesLibraryStore, useCanvas } from '@/stores'
 import NodesLibraryPanel from '@/components/NodesLibraryPanel.vue'
+import NodePropertiesDialog from '@/components/NodePropertiesDialog.vue'
 import VersionControlPanel from '@/components/VersionControlPanel.vue'
 import type { INodeCanvas, INodeCanvasAdd } from '@canvas/interfaz/node.interface'
 import { useRouter } from 'vue-router'
@@ -74,6 +79,10 @@ const nodeOrigin = ref<INodeCanvasAdd | null>(null)
 const projectName = ref('Web Application')
 const nextNodePosition = ref({ x: 100, y: 100 })
 const currentMousePosition = ref({ x: 0, y: 0 })
+
+// Estados para el diálogo de propiedades
+const showNodePropertiesDialog = ref(false)
+const selectedNodeForEdit = ref<INodeCanvas | null>(null)
 
 let canvasInstance: Canvas | null = null
 
@@ -113,6 +122,26 @@ const onPanelClose = () => {
   console.log('Panel de nodos cerrado')
 }
 
+// Funciones para el diálogo de propiedades del nodo
+const closeNodePropertiesDialog = () => {
+  showNodePropertiesDialog.value = false
+  selectedNodeForEdit.value = null
+}
+
+const handleNodePropertiesSave = (updatedNode: INodeCanvas) => {
+  if (!canvasInstance) return
+
+  // Aquí puedes implementar la lógica para actualizar el nodo en el canvas
+  console.log('Nodo actualizado:', updatedNode)
+
+  // Por ejemplo, podrías llamar a un método del canvas para actualizar el nodo
+  // canvasInstance.updateNode(updatedNode.id, updatedNode)
+
+  // Marcar cambios
+  // Esto depende de cómo esté implementado el store, por ahora solo mostramos un mensaje
+  console.log('Cambios guardados en el nodo')
+}
+
 onMounted(() => {
   if (!contentCanvas.value) return
 
@@ -132,8 +161,14 @@ onMounted(() => {
     nodeOrigin.value = e
     nodesStore.showNodePanel()
   })
-  canvasInstance.subscriber("node_dbclick", (e: INodeCanvasAdd) => {
-    console.log('Nodo añadido:', e)
+  canvasInstance.subscriber("node_dbclick", (e: INodeCanvas[]) => {
+    console.log('Doble clic en nodo:', e)
+    if (e.length > 1 || e.length === 0) {
+      alert('No se puede añadir más de un nodo a la vez')
+      return
+    }
+    selectedNodeForEdit.value = e[0]
+    showNodePropertiesDialog.value = true
   })
 
   canvasStore.initCanvas({ flow: router.currentRoute.value.params.id as string, canvasInstance })

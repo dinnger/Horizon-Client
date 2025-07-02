@@ -105,38 +105,13 @@ export const useNodesLibraryStore = defineStore('nodesLibrary', () => {
 	}
 
 	// Buscar nodos
-	const searchNodes = async (query: string) => {
-		try {
-			const searchResults = await socketService.searchNodes(query)
-
-			// Convertir resultados de búsqueda al formato del cliente
-			return Object.entries(searchResults).map(([type, nodeData]: [string, any]) => ({
-				type,
-				design: { x: 0, y: 0 },
-				tags: nodeData.dependencies || [],
-				info: {
-					name: nodeData.name,
-					desc: nodeData.info.description || nodeData.info.title,
-					icon: nodeData.info.icon || '●',
-					group: Array.isArray(nodeData.group) ? nodeData.group[0] : nodeData.group,
-					color: nodeData.info.color || '#3498DB',
-					connectors: nodeData.info.connectors || {
-						inputs: [{ name: 'init' }],
-						outputs: [{ name: 'response' }, { name: 'error' }]
-					}
-				},
-				properties: nodeData.properties || {}
-			}))
-		} catch (err) {
-			console.error('Error searching nodes:', err)
-			// Fallback a búsqueda local
-			return availableNodes.value.filter(
-				(node) =>
-					node.info.name.toLowerCase().includes(query.toLowerCase()) ||
-					node.info.desc.toLowerCase().includes(query.toLowerCase()) ||
-					node.type.toLowerCase().includes(query.toLowerCase())
-			)
-		}
+	const searchNodes = (query: string) => {
+		return availableNodes.value.filter(
+			(node) =>
+				node.info.name.toLowerCase().includes(query.toLowerCase()) ||
+				node.info.desc.toLowerCase().includes(query.toLowerCase()) ||
+				node.info.group.toLowerCase().includes(query.toLowerCase())
+		)
 	}
 
 	// Obtener información detallada de un nodo
