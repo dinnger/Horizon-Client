@@ -346,18 +346,36 @@ class SocketService {
 		})
 	}
 
-	executeWorkflow(workflowId: string, trigger = 'manual'): Promise<any> {
+	executeWorkflow(workflowId: string, trigger = 'manual', version?: string): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if (!this.socket) {
 				reject(new Error('Socket not connected'))
 				return
 			}
 
-			this.socket.emit('workflows:execute', { workflowId, trigger }, (response: any) => {
+			const payload = { workflowId, trigger, ...(version && { version }) }
+			this.socket.emit('workflows:execute', payload, (response: any) => {
 				if (response.success) {
 					resolve(response)
 				} else {
 					reject(new Error(response.message || 'Failed to execute workflow'))
+				}
+			})
+		})
+	}
+
+	getWorkflowVersions(workflowId: string): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error('Socket not connected'))
+				return
+			}
+
+			this.socket.emit('workflows:getVersions', { workflowId }, (response: any) => {
+				if (response.success) {
+					resolve(response)
+				} else {
+					reject(new Error(response.message || 'Failed to get workflow versions'))
 				}
 			})
 		})

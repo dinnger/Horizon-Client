@@ -56,23 +56,32 @@ export const useCanvas = defineStore('canvas', () => {
 
 	const save = async () => {
 		if (!canvasInstance) return
-		await workflowsStore.updateWorkflow(workflowId.value, canvasInstance.getWorkflowData())
-		changes.value = false
+		try {
+			await workflowsStore.updateWorkflow(workflowId.value, canvasInstance.getWorkflowData())
+			changes.value = false
+		} catch (error) {}
 	}
 
-	const execute = async () => {
+	const execute = async (selectedVersion?: string) => {
 		if (!canvasInstance) return
 
 		try {
-			// First save the current workflow
-			await save()
+			// First save the current workflow (only if no specific version is selected)
+			if (!selectedVersion) {
+				await save()
+			}
 
 			// Execute the workflow which will also save to file
-			const result = await socketService.executeWorkflow(workflowId.value)
+			const result = await socketService.executeWorkflow(workflowId.value, 'manual', selectedVersion)
 
 			if (result.success) {
 				console.log('Workflow ejecutado exitosamente:', result.executionId)
-				return { success: true, executionId: result.executionId }
+				return {
+					success: true,
+					executionId: result.executionId,
+					version: result.version,
+					message: result.message
+				}
 			}
 
 			console.error('Error ejecutando workflow:', result.message)
@@ -80,6 +89,16 @@ export const useCanvas = defineStore('canvas', () => {
 		} catch (error) {
 			console.error('Error en ejecución:', error)
 			return { success: false, message: 'Error al ejecutar workflow' }
+		}
+	}
+
+	const getVersions = async () => {
+		try {
+			const result = await socketService.getWorkflowVersions(workflowId.value)
+			return result
+		} catch (error) {
+			console.error('Error obteniendo versiones:', error)
+			return { success: false, message: 'Error al obtener versiones' }
 		}
 	}
 
@@ -106,6 +125,7 @@ export const useCanvas = defineStore('canvas', () => {
 		initCanvas,
 		save,
 		execute,
+		getVersions,
 		getHistory,
 		selectHistory,
 		clearHistory,

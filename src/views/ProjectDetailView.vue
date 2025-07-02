@@ -11,6 +11,18 @@
         <div class="flex-1">
           <h1 class="text-3xl font-bold text-primary">{{ project?.name }}</h1>
           <p class="text-base-content/70 mt-1">{{ project?.description }}</p>
+
+          <!-- Transport Info -->
+          <div v-if="project?.transportType && project.transportType !== 'none'" class="mt-3">
+            <div class="flex items-center space-x-3 text-sm">
+              <div class="badge badge-info badge-sm">
+                {{ getTransportLabel(project.transportType) }}
+              </div>
+              <div v-if="getConnectionInfo(project)" class="font-mono text-xs text-base-content/60">
+                {{ getConnectionInfo(project) }}
+              </div>
+            </div>
+          </div>
         </div>
         <div class="flex space-x-2">
           <button @click="showWorkflowModal = true" class="btn btn-primary">
@@ -70,6 +82,141 @@
           <div class="stat-title">Tiempo Promedio</div>
           <div class="stat-value text-info">{{ projectStats.avgDuration }}</div>
           <div class="stat-desc">Por ejecución</div>
+        </div>
+      </div>
+
+      <!-- Transport Configuration -->
+      <div v-if="project?.transportType && project.transportType !== 'none'"
+        class="card bg-base-200 shadow-xl backdrop-blur-sm border border-base-300 mb-8">
+        <div class="card-body">
+          <h2 class="card-title mb-4">Configuración de Transporte</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Información básica -->
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <span class="font-medium text-base-content/80">Tipo:</span>
+                <div class="badge badge-info">{{ getTransportLabel(project.transportType) }}</div>
+              </div>
+            </div>
+
+            <!-- Configuración específica -->
+            <div class="space-y-3">
+              <h4 class="font-medium text-base-content/80">Configuración de Conexión</h4>
+
+              <!-- TCP -->
+              <div v-if="project.transportType === 'tcp' && project.transportConfig" class="space-y-2">
+                <div v-if="project.transportConfig.host" class="text-sm">
+                  <span class="text-base-content/60">Host:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.host }}</span>
+                </div>
+                <div v-if="project.transportConfig.port" class="text-sm">
+                  <span class="text-base-content/60">Puerto:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.port }}</span>
+                </div>
+              </div>
+
+              <!-- RabbitMQ -->
+              <div v-if="project.transportType === 'rabbitmq' && project.transportConfig" class="space-y-2">
+                <div v-if="project.transportConfig.amqpUrl" class="text-sm">
+                  <span class="text-base-content/60">URL AMQP:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.amqpUrl }}</span>
+                </div>
+                <div v-if="project.transportConfig.exchange" class="text-sm">
+                  <span class="text-base-content/60">Exchange:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.exchange }}</span>
+                </div>
+                <div v-if="project.transportConfig.queue" class="text-sm">
+                  <span class="text-base-content/60">Queue:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.queue }}</span>
+                </div>
+                <div v-if="project.transportConfig.routingKey" class="text-sm">
+                  <span class="text-base-content/60">Routing Key:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.routingKey }}</span>
+                </div>
+              </div>
+
+              <!-- Kafka -->
+              <div v-if="project.transportType === 'kafka' && project.transportConfig" class="space-y-2">
+                <div v-if="project.transportConfig.brokers" class="text-sm">
+                  <span class="text-base-content/60">Brokers:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.brokers }}</span>
+                </div>
+                <div v-if="project.transportConfig.topic" class="text-sm">
+                  <span class="text-base-content/60">Topic:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.topic }}</span>
+                </div>
+                <div v-if="project.transportConfig.clientId" class="text-sm">
+                  <span class="text-base-content/60">Client ID:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.clientId }}</span>
+                </div>
+                <div v-if="project.transportConfig.groupId" class="text-sm">
+                  <span class="text-base-content/60">Group ID:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.groupId }}</span>
+                </div>
+              </div>
+
+              <!-- NATS -->
+              <div v-if="project.transportType === 'nats' && project.transportConfig" class="space-y-2">
+                <div v-if="project.transportConfig.natsUrl" class="text-sm">
+                  <span class="text-base-content/60">URL NATS:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.natsUrl }}</span>
+                </div>
+                <div v-if="project.transportConfig.subject" class="text-sm">
+                  <span class="text-base-content/60">Subject:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.subject }}</span>
+                </div>
+              </div>
+
+              <!-- HTTP -->
+              <div v-if="project.transportType === 'http' && project.transportConfig" class="space-y-2">
+                <div v-if="project.transportConfig.baseUrl" class="text-sm">
+                  <span class="text-base-content/60">Base URL:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.baseUrl }}</span>
+                </div>
+                <div v-if="project.transportConfig.timeout" class="text-sm">
+                  <span class="text-base-content/60">Timeout:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.timeout }}ms</span>
+                </div>
+              </div>
+
+              <!-- WebSocket -->
+              <div v-if="project.transportType === 'websocket' && project.transportConfig" class="space-y-2">
+                <div v-if="project.transportConfig.wsUrl" class="text-sm">
+                  <span class="text-base-content/60">WebSocket URL:</span>
+                  <span class="font-mono ml-2">{{ project.transportConfig.wsUrl }}</span>
+                </div>
+              </div>
+
+              <!-- Configuración común -->
+              <div v-if="project.transportConfig && hasAdvancedConfig(project.transportConfig)" class="mt-4">
+                <div class="collapse collapse-arrow bg-base-300">
+                  <input type="checkbox" />
+                  <div class="collapse-title text-sm font-medium">
+                    Configuración Avanzada
+                  </div>
+                  <div class="collapse-content space-y-2">
+                    <div v-if="project.transportConfig.username" class="text-sm">
+                      <span class="text-base-content/60">Usuario:</span>
+                      <span class="font-mono ml-2">{{ project.transportConfig.username }}</span>
+                    </div>
+                    <div v-if="project.transportConfig.ssl" class="text-sm">
+                      <span class="text-base-content/60">SSL/TLS:</span>
+                      <span class="badge badge-success badge-sm ml-2">Habilitado</span>
+                    </div>
+                    <div v-if="project.transportConfig.retries" class="text-sm">
+                      <span class="text-base-content/60">Reintentos:</span>
+                      <span class="font-mono ml-2">{{ project.transportConfig.retries }}</span>
+                    </div>
+                    <div v-if="project.transportConfig.retryDelay" class="text-sm">
+                      <span class="text-base-content/60">Retraso entre reintentos:</span>
+                      <span class="font-mono ml-2">{{ project.transportConfig.retryDelay }}ms</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -262,5 +409,46 @@ const formatDate = (date: Date) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+const getTransportLabel = (transportType: string) => {
+  const labels: Record<string, string> = {
+    none: 'Sin transporte',
+    tcp: 'TCP',
+    rabbitmq: 'RabbitMQ',
+    kafka: 'Kafka',
+    nats: 'NATS',
+    http: 'HTTP',
+    websocket: 'WebSocket',
+    mqtt: 'MQTT'
+  }
+  return labels[transportType] || transportType.toUpperCase()
+}
+
+const getConnectionInfo = (project: any) => {
+  if (!project?.transportConfig || project.transportType === 'none') return null
+
+  const config = project.transportConfig
+
+  switch (project.transportType) {
+    case 'tcp':
+      return config.host && config.port ? `${config.host}:${config.port}` : null
+    case 'rabbitmq':
+      return config.amqpUrl || (config.exchange && config.queue ? `${config.exchange}/${config.queue}` : null)
+    case 'kafka':
+      return config.brokers || (config.topic ? `Topic: ${config.topic}` : null)
+    case 'nats':
+      return config.natsUrl || (config.subject ? `Subject: ${config.subject}` : null)
+    case 'http':
+      return config.baseUrl
+    case 'websocket':
+      return config.wsUrl
+    default:
+      return null
+  }
+}
+
+const hasAdvancedConfig = (config: any) => {
+  return config.username || config.ssl || config.retries || config.retryDelay
 }
 </script>

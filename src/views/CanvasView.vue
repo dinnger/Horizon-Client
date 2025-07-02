@@ -29,10 +29,17 @@
       </div>
 
       <div class="absolute top-[38px] right-1/2 translate-6/12  flex gap-2 p-2 bg-black/20 backdrop-blur-sm rounded-md">
-        <button class="btn btn-sm btn-soft btn-primary" @click="handleExecuteWorkflow" :disabled="isExecuting">
-          <span class="mdi mdi-play"></span>
-          {{ isExecuting ? 'Ejecutando...' : 'Ejecutar' }}
-        </button>
+        <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-sm btn-soft btn-primary">
+            <span class="mdi mdi-play"></span>
+            {{ isExecuting ? 'Ejecutando...' : 'Ejecutar' }}
+            <span class="mdi mdi-chevron-down ml-1"></span>
+          </label>
+          <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+            <li><a @click="handleExecuteWorkflow()">Ejecutar Última Versión</a></li>
+            <li><a @click="handleExecuteWithVersionSelection">Ejecutar Versión Específica...</a></li>
+          </ul>
+        </div>
         <h2 class="text-[10px]">Version: {{ canvasStore.version.value }}</h2>
       </div>
     </div>
@@ -62,6 +69,43 @@
     <!-- Menú contextual de conexión -->
     <ConnectionContextMenu :is-visible="showConnectionContextMenu" :connection-info="selectedConnectionForContext"
       @close="closeConnectionContextMenu" @delete="handleConnectionDelete" />
+
+    <!-- Modal de selección de versiones -->
+    <div v-if="showVersionSelector" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Seleccionar Versión para Ejecutar</h3>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Versiones Disponibles:</span>
+          </label>
+          <div class="max-h-60 overflow-y-auto">
+            <div v-for="version in availableVersions" :key="version.version"
+              class="flex items-center p-2 hover:bg-base-200 rounded cursor-pointer"
+              @click="selectedVersion = version.version">
+              <input type="radio" :value="version.version" v-model="selectedVersion" class="radio radio-primary mr-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-sm">{{ version.version }}</span>
+                  <span v-if="version.isCurrent" class="badge badge-primary badge-xs">Actual</span>
+                  <span class="badge badge-outline badge-xs">{{ version.changeType }}</span>
+                </div>
+                <p class="text-xs text-base-content/60">{{ version.changeDescription }}</p>
+                <p class="text-xs text-base-content/40">{{ new Date(version.createdAt).toLocaleString() }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-action">
+          <button class="btn btn-primary" @click="executeSelectedVersion" :disabled="!selectedVersion">
+            <span class="mdi mdi-play"></span>
+            Ejecutar Versión
+          </button>
+          <button class="btn" @click="closeVersionSelector">Cancelar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -92,7 +136,12 @@ const nextNodePosition = ref({ x: 100, y: 100 })
 const currentMousePosition = ref({ x: 0, y: 0 })
 const isExecuting = ref(false)
 
-// Estados para el diálogo de propiedades
+// Estados para el selector de versiones
+const showVersionSelector = ref(false)
+const availableVersions = ref<any[]>([])
+const selectedVersion = ref<string | null>(null)
+
+// Estados para el diálogo de propiedades del nodo
 const showNodePropertiesDialog = ref(false)
 const selectedNodeForEdit = ref<INodeCanvas | null>(null)
 
@@ -240,20 +289,21 @@ const handleConnectionDelete = (connectionId: string) => {
 }
 
 // Función para manejar la ejecución del workflow
-const handleExecuteWorkflow = async () => {
+const handleExecuteWorkflow = async (version?: string) => {
   if (isExecuting.value) return
 
   isExecuting.value = true
 
   try {
-    const result = await canvasStore.execute()
+    const result = await canvasStore.execute(version)
 
     if (result?.success) {
       console.log('Workflow ejecutado exitosamente')
-      // Aquí puedes agregar notificaciones de éxito
+      if (result.message) {
+        alert(result.message)
+      }
     } else {
       console.error('Error ejecutando workflow:', result?.message)
-      // Aquí puedes agregar notificaciones de error
       alert(`Error ejecutando workflow: ${result?.message || 'Error desconocido'}`)
     }
   } catch (error) {
@@ -262,6 +312,40 @@ const handleExecuteWorkflow = async () => {
   } finally {
     isExecuting.value = false
   }
+}
+
+// Función para mostrar el selector de versiones
+const handleExecuteWithVersionSelection = async () => {
+  try {
+    const versionsResult = await canvasStore.getVersions()
+
+    if (versionsResult?.success) {
+      availableVersions.value = versionsResult.versions
+      showVersionSelector.value = true
+    } else {
+      alert(`Error obteniendo versiones: ${versionsResult?.message || 'Error desconocido'}`)
+    }
+  } catch (error) {
+    console.error('Error obteniendo versiones:', error)
+    alert('Error obteniendo versiones del workflow')
+  }
+}
+
+// Función para cerrar el selector de versiones
+const closeVersionSelector = () => {
+  showVersionSelector.value = false
+  selectedVersion.value = null
+}
+
+// Función para ejecutar la versión seleccionada
+const executeSelectedVersion = async () => {
+  if (!selectedVersion.value) {
+    alert('Por favor selecciona una versión')
+    return
+  }
+
+  closeVersionSelector()
+  await handleExecuteWorkflow(selectedVersion.value)
 }
 
 onMounted(() => {

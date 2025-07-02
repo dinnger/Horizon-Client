@@ -3,12 +3,50 @@ import { defineStore } from 'pinia'
 import { useWorkspaceStore } from './workspace'
 import socketService from '../services/socket'
 
+export interface ProjectTransportConfig {
+	// TCP
+	host?: string
+	port?: number
+
+	// RabbitMQ
+	amqpUrl?: string
+	exchange?: string
+	queue?: string
+	routingKey?: string
+
+	// Kafka
+	brokers?: string[]
+	clientId?: string
+	groupId?: string
+	topic?: string
+
+	// NATS
+	natsUrl?: string
+	subject?: string
+
+	// HTTP/REST
+	baseUrl?: string
+	timeout?: number
+
+	// WebSocket
+	wsUrl?: string
+
+	// Common
+	username?: string
+	password?: string
+	ssl?: boolean
+	retries?: number
+	retryDelay?: number
+}
+
 export interface Project {
 	id: string
 	workspaceId?: string
 	name: string
 	description: string
 	status: 'active' | 'inactive'
+	transportType?: 'none' | 'tcp' | 'rabbitmq' | 'kafka' | 'nats' | 'http' | 'websocket' | 'mqtt'
+	transportConfig?: ProjectTransportConfig
 	createdAt: Date
 	updatedAt: Date
 }
