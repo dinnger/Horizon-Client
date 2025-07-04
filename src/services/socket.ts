@@ -216,6 +216,24 @@ class SocketService {
 		})
 	}
 
+	getProjectById(workspaceId: string, projectId: string): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error('Socket not connected'))
+				return
+			}
+
+			this.socket.emit('projects:get', { workspaceId, projectId }, (response: any) => {
+				console.log('response', response)
+				if (response.success && response.project) {
+					resolve(response.project)
+				} else {
+					reject(new Error(response.message || 'Failed to get project'))
+				}
+			})
+		})
+	}
+
 	createProject(projectData: any): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if (!this.socket) {
@@ -228,6 +246,22 @@ class SocketService {
 					resolve(response.project)
 				} else {
 					reject(new Error(response.message || 'Failed to create project'))
+				}
+			})
+		})
+	}
+
+	updateProject(projectId: string, updates: any): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if (!this.socket) {
+				reject(new Error('Socket not connected'))
+				return
+			}
+			this.socket.emit('projects:update', { id: projectId, ...updates }, (response: any) => {
+				if (response.success && response.project) {
+					resolve(response.project)
+				} else {
+					reject(new Error(response.message || 'Failed to update project'))
 				}
 			})
 		})

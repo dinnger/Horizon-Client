@@ -52,6 +52,7 @@ export interface Project {
 }
 
 export const useProjectsStore = defineStore('projects', () => {
+	const isInitialized = ref(false)
 	const projects = ref<Project[]>([])
 	const loading = ref(false)
 	const error = ref<string | null>(null)
@@ -60,7 +61,10 @@ export const useProjectsStore = defineStore('projects', () => {
 
 	// Computed properties
 	const getProjectById = computed(() => {
-		return (id: string) => projects.value.find((p) => p.id === id)
+		if (!isInitialized.value) initializeData()
+		return (id: string) => {
+			return projects.value.find((p) => p.id.toString() === id.toString())
+		}
 	})
 
 	const getActiveProjectsCount = computed(() => {
@@ -81,7 +85,8 @@ export const useProjectsStore = defineStore('projects', () => {
 
 	// Actions
 	const initializeData = () => {
-		// Cargar datos del localStorage
+		if (isInitialized.value) return
+		isInitialized.value = true
 		watch(
 			() => workspaceStore.currentWorkspaceId,
 			async (value) => {
@@ -95,7 +100,6 @@ export const useProjectsStore = defineStore('projects', () => {
 	const loadProjects = async () => {
 		showEmptyState.value = false
 		const parsed: Project[] = await socketService.getProjects(workspaceStore.currentWorkspaceId)
-		console.log('🌱 Cargando proyectos...', parsed)
 		if (!parsed || parsed.length === 0) {
 			showEmptyState.value = true
 			projects.value = []
@@ -128,16 +132,15 @@ export const useProjectsStore = defineStore('projects', () => {
 	}
 
 	const updateProject = (projectId: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) => {
-		const index = projects.value.findIndex((p) => p.id === projectId)
-		if (index > -1) {
-			projects.value[index] = {
-				...projects.value[index],
-				...updates,
-				updatedAt: new Date()
-			}
-			return projects.value[index]
+		const now = new Date()
+		const updatedProject = {
+			...getProjectById.value(projectId),
+			...updates,
+			updatedAt: now
 		}
-		return null
+		socketService.updateProject(projectId, updatedProject)
+		loadProjects()
+		return updatedProject
 	}
 
 	const deleteProject = async (projectId: string) => {

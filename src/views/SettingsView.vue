@@ -448,13 +448,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useSettingsStore } from '../stores/settings'
-import type { Workspace } from '../stores/workspace'
 import IconSettings from '../components/icons/IconSettings.vue'
 import IconProjects from '../components/icons/IconProjects.vue'
 import IconSupport from '../components/icons/IconSupport.vue'
 import IconSun from '../components/icons/IconSun.vue'
 import IconMoon from '../components/icons/IconMoon.vue'
 import IconPalette from '../components/icons/IconPalette.vue'
+import type { Workspace } from '@/types/socket'
 
 const workspaceStore = useWorkspaceStore()
 const settingsStore = useSettingsStore()
@@ -505,7 +505,7 @@ const editWorkspace = (workspace: Workspace) => {
   editingWorkspace.value = workspace
   workspaceForm.name = workspace.name
   workspaceForm.description = workspace.description || ''
-  workspaceForm.color = workspace.color
+  workspaceForm.color = workspace.color || ''
   workspaceForm.isDefault = workspace.isDefault
   showWorkspaceModal.value = true
 }
@@ -540,7 +540,8 @@ const saveWorkspace = () => {
       description: workspaceForm.description,
       color: workspaceForm.color,
       icon: 'mdi-briefcase',
-      isDefault: workspaceForm.isDefault
+      isDefault: workspaceForm.isDefault,
+      status: 'active'
     })
   }
 
