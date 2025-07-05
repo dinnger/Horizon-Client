@@ -118,6 +118,7 @@ import { useAuthStore } from '../stores/auth'
 import IconHome from '../components/icons/IconHome.vue'
 import IconProjects from '../components/icons/IconProjects.vue'
 import IconSettings from '../components/icons/IconSettings.vue'
+import IconWorkers from '../components/icons/IconWorkers.vue'
 import IconSun from '../components/icons/IconSun.vue'
 import IconMoon from '../components/icons/IconMoon.vue'
 import IconPalette from '../components/icons/IconPalette.vue'
@@ -136,6 +137,7 @@ const isExpanded = ref(true)
 const menuItems = [
   { path: '/', label: 'Home', icon: IconHome },
   { path: '/projects', label: 'Projects', icon: IconProjects },
+  { path: '/workers', label: 'Workers', icon: IconWorkers },
   { path: '/settings', label: 'Settings', icon: IconSettings }
 ]
 
